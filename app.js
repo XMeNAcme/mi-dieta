@@ -162,7 +162,17 @@ function openExercise(id){
  $("#modalSetup").innerHTML="<b>Preparación:</b> "+esc(ex.setup)+(last?'<br><b>Última vez:</b> '+last.weight+' kg · '+last.sets+' series × '+last.reps+' reps':'');
  $("#modalHow").innerHTML="<b>Ejecución:</b> "+esc(ex.how);
  $("#modalTip").innerHTML="<b>Clave:</b> "+esc(ex.tip);
- $("#modalVideo").onclick=()=>window.open(youtubeSearch(ex),"_blank","noopener,noreferrer");
+ const saved=state.media[mediaKey("exercise",id)]?.video||"";
+ $("#exerciseVideoUrl").value=saved;
+ $("#modalVideo").textContent=saved?"▶ Abrir vídeo guardado":"▶ Buscar vídeo";
+ $("#modalVideo").onclick=()=>window.open(saved||youtubeSearch(ex),"_blank","noopener,noreferrer");
+ $("#searchExerciseVideo").onclick=()=>window.open(youtubeSearch(ex),"_blank","noopener,noreferrer");
+ $("#saveExerciseVideo").onclick=()=>{
+   const url=$("#exerciseVideoUrl").value.trim();
+   if(url && !/^https?:\/\//i.test(url)) return alert("El enlace debe empezar por http:// o https://");
+   state.media[mediaKey("exercise",id)]={...(state.media[mediaKey("exercise",id)]||{}),video:url};
+   saveState(); openExercise(id); alert(url?"Vídeo guardado ✅":"Vídeo eliminado");
+ };
  $("#exercisePhotoInput").onchange=e=>savePhoto("exercise",id,e.target.files[0]);
  $("#exerciseModal").classList.add("open");$("#exerciseModal").setAttribute("aria-hidden","false");
 }
