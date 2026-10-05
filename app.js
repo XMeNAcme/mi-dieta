@@ -170,8 +170,8 @@ function renderMealGallery(){
  const root=$("#mealGallery"); if(!root)return;
  const mm=meals(); const names=Object.keys(mm).filter(n=>n!=="— Selecciona —");
  root.innerHTML=names.map(n=>{const m=mm[n],id=n;return '<button class="media-card" data-meal-gallery="'+esc(id)+'"><img src="'+mediaImg("meal",id,m.img)+'" alt=""><div class="media-meta"><div class="media-name">'+esc(n)+'</div><div class="media-sub">'+m.k+' kcal · '+m.p+' g proteína</div><div class="media-actions"><span class="iconbtn" data-photo-meal="'+esc(id)+'">📷 Foto</span></div></div></button>'}).join("");
- $("[data-meal-gallery]").forEach(b=>b.onclick=e=>{if(e.target.closest("[data-photo-meal]"))return;const i=(new Date().getDay()+6)%7;dietEntry(i).meal=b.dataset.mealGallery;saveState();renderDiet();renderHome();b.classList.add("selected")});
- $("[data-photo-meal]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();const id=b.dataset.photoMeal,input=document.createElement("input");input.type="file";input.accept="image/*";input.capture="environment";input.onchange=()=>savePhoto("meal",id,input.files[0]);input.click()});
+ $$("[data-meal-gallery]").forEach(b=>b.onclick=e=>{if(e.target.closest("[data-photo-meal]"))return;const i=(new Date().getDay()+6)%7;dietEntry(i).meal=b.dataset.mealGallery;saveState();renderDiet();renderHome();b.classList.add("selected")});
+ $$("[data-photo-meal]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();const id=b.dataset.photoMeal,input=document.createElement("input");input.type="file";input.accept="image/*";input.capture="environment";input.onchange=()=>savePhoto("meal",id,input.files[0]);input.click()});
 }
 function applyTheme(){
  document.body.classList.toggle("dark",!!state.settings.dark);
@@ -202,7 +202,7 @@ function renderDiet(){
   </article>`);
  });
  $$("[data-kind]").forEach(el=>el.onchange=()=>{const i=+el.dataset.i;dietEntry(i)[el.dataset.kind]=el.value;saveState();renderDiet();renderHome()});
- $("[data-extra]").forEach(el=>el.onchange=()=>{const i=+el.dataset.i;dietEntry(i).extras[el.dataset.extra]=el.checked;saveState();renderDiet();renderHome()});
+ $$("[data-extra]").forEach(el=>el.onchange=()=>{const i=+el.dataset.i;dietEntry(i).extras[el.dataset.extra]=el.checked;saveState();renderDiet();renderHome()});
  renderMealGallery();
 }
 function todayDiet(){
@@ -229,8 +229,8 @@ function renderRoutine(){
     </div></article>`;
   }).join("")}</div></section>`);
  });
- $("[data-open-ex]").forEach(el=>el.onclick=()=>openExercise(el.dataset.openEx));
- $("[data-wkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.wkey;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].w=el.value;saveState()});
+ $$("[data-open-ex]").forEach(el=>el.onclick=()=>openExercise(el.dataset.openEx));
+ $$("[data-wkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.wkey;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].w=el.value;saveState()});
  $$("[data-rkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.rkey;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].reps=+el.value||10;saveState()});
  $$("[data-skey]").forEach(el=>el.onclick=()=>{const k=el.dataset.skey,s=+el.dataset.set;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].sets[s]=!state.workoutDraft[k].sets[s];saveState();renderRoutine();updateSessionSummary()});
  updateSessionSummary();
@@ -255,8 +255,8 @@ function renderCatalog(){
   <div class="muscle">${esc(ex.m)}</div><div class="exercise-name">${esc(ex.n)}</div><div class="tags"><span class="tag">${esc(ex.equip)}</span></div>
   <p class="small"><b>Preparación:</b> ${esc(ex.setup)}</p><p class="small"><b>Ejecución:</b> ${esc(ex.how)}</p><p class="small"><b>Clave:</b> ${esc(ex.tip)}</p><div class="last-load">${(()=>{const l=lastExerciseStats(ex.id),pr=exercisePR(ex.id);return l?`Última: <strong>${l.weight} kg</strong> · PR ${pr} kg`:"Sin historial"})()}</div><div class="media-actions"><button class="btn primary sm" data-open-ex="${ex.id}">▶ Ver técnica</button><label class="btn ghost sm" style="margin:0">📷 Foto<input type="file" accept="image/*" capture="environment" data-photo-ex="${ex.id}" style="display:none"></label></div>
  </div></article>`).join("");
- $("[data-open-ex]").forEach(el=>el.onclick=()=>openExercise(el.dataset.openEx));
- $("[data-photo-ex]").forEach(el=>el.onchange=e=>savePhoto("exercise",el.dataset.photoEx,e.target.files[0]));
+ $$("[data-open-ex]").forEach(el=>el.onclick=()=>openExercise(el.dataset.openEx));
+ $$("[data-photo-ex]").forEach(el=>el.onchange=e=>savePhoto("exercise",el.dataset.photoEx,e.target.files[0]));
 }
 function latestWorkoutBurnToday(){
  return state.workouts.filter(w=>w.date===todayISO()).reduce((a,w)=>a+(w.burn||0),0);
