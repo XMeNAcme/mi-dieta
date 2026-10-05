@@ -1,4 +1,4 @@
-const CACHE="mi-plan-v2-2026-10-05";
+const CACHE="mi-plan-v3-2026-10-05";
 const ASSETS=["./","./index.html","./app.js","./manifest.webmanifest","./icon-192.svg","./icon-512.svg",
 "./assets/homegym.svg","./assets/meal-default.svg","./assets/meal-rice.svg","./assets/meal-pasta.svg","./assets/meal-chicken.svg","./assets/meal-meat.svg","./assets/meal-burger.svg","./assets/meal-wrap.svg","./assets/meal-eggs.svg","./assets/meal-sandwich.svg","./assets/meal-pizza.svg","./assets/meal-custom.svg",
 "./assets/ex-chestpress.svg","./assets/ex-fly.svg","./assets/ex-cable.svg","./assets/ex-latpulldown.svg","./assets/ex-row.svg","./assets/ex-biceps.svg","./assets/ex-triceps.svg","./assets/ex-shoulder.svg","./assets/ex-legext.svg","./assets/ex-legs.svg","./assets/ex-ham.svg","./assets/ex-hips.svg","./assets/ex-abs.svg"];
