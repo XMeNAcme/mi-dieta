@@ -1,4 +1,4 @@
-console.info("Mi Plan V3.2 loaded");
+console.info("Mi Plan V3.3 loaded");
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const todayISO=()=>new Date().toISOString().slice(0,10);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
@@ -28,18 +28,37 @@ const extras={
  "Almendras/anacardos 20 g":{k:120,p:4},"Helado (~200 kcal)":{k:200,p:3},"Whey + 250 ml leche":{k:245,p:32}
 };
 const days=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+const guideArt={
+ press_pecho:"assets/guide-chestpress.svg",
+ butterfly:"assets/guide-butterfly.svg",
+ cruce_bajo:"assets/guide-chestpress.svg",
+ jalon_ancho:"assets/guide-latpulldown.svg",
+ jalon_supino:"assets/guide-latpulldown.svg",
+ remo_sentado:"assets/guide-row.svg",
+ curl_barra:"assets/guide-biceps.svg",
+ curl_unilateral:"assets/guide-biceps.svg",
+ curl_cruzado:"assets/guide-biceps.svg",
+ pushdown:"assets/guide-triceps.svg",
+ pushdown_uni:"assets/guide-triceps.svg",
+ triceps_overhead:"assets/guide-triceps.svg",
+ legext:"assets/guide-legext.svg",
+ hamcurl:"assets/guide-hamcurl.svg"
+};
+
 
 const curatedMedia={
+ hamcurl:{video:"https://www.youtube.com/results?search_query=curl+femoral+polea+baja+tecnica+hombre"},
+ curl_barra:{video:"https://www.youtube.com/results?search_query=curl+biceps+polea+tecnica+hombre"},
+ remo_sentado:{video:"https://www.youtube.com/watch?v=nwdptbhYjTw"},
+ jalon_ancho:{video:"https://www.youtube.com/watch?v=TIZbG7Tjbf8"},
  press_pecho:{
-  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Girl_doing_chest_press_machine_exercise.jpg/960px-Girl_doing_chest_press_machine_exercise.jpg",
-  video:"https://www.youtube.com/watch?v=lw4uUkBl_HE",
-  credit:"Foto: Tyler Read / PTPioneer · CC BY 2.0 · Wikimedia Commons"
+  video:"https://www.youtube.com/results?search_query=press+de+pecho+maquina+tecnica+hombre"
  },
  pushdown:{
-  video:"https://www.youtube.com/watch?v=bluq3g4XIWg"
+  video:"https://www.youtube.com/results?search_query=extension+triceps+polea+alta+tecnica+hombre"
  },
  legext:{
-  video:"https://www.youtube.com/watch?v=rf5Nxw0vaOc"
+  video:"https://www.youtube.com/results?search_query=extension+de+piernas+maquina+tecnica+hombre"
  }
 };
 
@@ -137,7 +156,7 @@ function calcDietEntry(i){
 }
 
 function mediaKey(type,id){return type+":"+id}
-function mediaImg(type,id,fallback){return state.media[mediaKey(type,id)]?.img||curatedMedia[id]?.img||fallback}
+function mediaImg(type,id,fallback){return state.media[mediaKey(type,id)]?.img||(type==="exercise"&&guideArt[id])||curatedMedia[id]?.img||fallback}
 function lastExerciseStats(id){
  const rows=[];
  state.workouts.forEach(w=>(w.exercises||[]).forEach(ex=>{if(ex.id===id)rows.push({date:w.date,weight:+ex.weight||0,reps:+ex.reps||0,sets:(ex.sets||[]).filter(Boolean).length})}));
@@ -195,7 +214,7 @@ function openExercise(id){
 function renderMealGallery(){
  const root=$("#mealGallery"); if(!root)return;
  const mm=meals(); const names=Object.keys(mm).filter(n=>n!=="— Selecciona —");
- root.innerHTML=names.map(n=>{const m=mm[n],id=n;return '<button class="media-card" data-meal-gallery="'+esc(id)+'"><img src="'+mediaImg("meal",id,m.img)+'" alt=""><div class="media-meta"><div class="media-name">'+esc(n)+'</div><div class="media-sub">'+m.k+' kcal · '+m.p+' g proteína</div><div class="media-actions"><span class="iconbtn" data-photo-meal="'+esc(id)+'">📷 Foto</span></div></div></button>'}).join("");
+ root.innerHTML=names.map(n=>{const m=mm[n],id=n;return '<button class="media-card" data-meal-gallery="'+esc(id)+'"><img src="'+mediaImg("meal",id,m.img)+'" alt=""><div class="media-meta"><div class="media-name">'+esc(n)+'</div><div class="media-sub">'+m.k+' kcal · '+m.p+' g proteína</div><div class="media-actions"><span class="iconbtn" data-photo-meal="'+esc(id)+'">🖼️ Mi foto</span></div></div></button>'}).join("");
  $$("[data-meal-gallery]").forEach(b=>b.onclick=e=>{if(e.target.closest("[data-photo-meal]"))return;const i=(new Date().getDay()+6)%7;dietEntry(i).meal=b.dataset.mealGallery;saveState();renderDiet();renderHome();b.classList.add("selected")});
  $$("[data-photo-meal]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();const id=b.dataset.photoMeal,input=document.createElement("input");input.type="file";input.accept="image/*";input.capture="environment";input.onchange=()=>savePhoto("meal",id,input.files[0]);input.click()});
 }
@@ -248,7 +267,7 @@ function renderRoutine(){
     <div class="exercise-body">
      <div class="muscle">${esc(ex.m)}</div><div class="exercise-name">${esc(ex.n)}</div>
      <div class="small">${esc(ex.setup)}</div>
-     <div class="tags"><span class="tag">${esc(ex.equip)}</span><span class="tag">3×10</span></div><div class="last-load">${(()=>{const l=lastExerciseStats(ex.id);return l?`Última vez: <strong>${l.weight} kg</strong> · ${l.sets} series × ${l.reps}`:"Sin historial todavía"})()}</div><div class="media-actions"><button class="iconbtn" data-open-ex="${ex.id}">📷 Técnica / vídeo</button></div>
+     <div class="tags"><span class="tag">${esc(ex.equip)}</span><span class="tag">3×10</span></div><div class="last-load">${(()=>{const l=lastExerciseStats(ex.id);return l?`Última vez: <strong>${l.weight} kg</strong> · ${l.sets} series × ${l.reps}`:"Sin historial todavía"})()}</div><div class="media-actions"><button class="iconbtn" data-open-ex="${ex.id}">🎬 Técnica / vídeo</button></div>
      <div class="weight-row"><div><label>Peso (kg)</label><input type="number" min="0" step="5" data-wkey="${esc(key)}" value="${esc(d.w)}" placeholder="0"></div><div><label>Reps</label><input type="number" min="1" max="50" data-rkey="${esc(key)}" value="${d.reps||10}"></div></div>
      <div class="sets">${[0,1,2].map(s=>`<button class="setbtn ${d.sets?.[s]?"done":""}" data-skey="${esc(key)}" data-set="${s}">Serie ${s+1}${d.sets?.[s]?" ✓":""}</button>`).join("")}</div>
      <details style="margin-top:8px"><summary>Técnica</summary><p class="small"><b>Cómo:</b> ${esc(ex.how)}<br><b>Clave:</b> ${esc(ex.tip)}</p></details>
@@ -279,7 +298,7 @@ function renderCatalog(){
  const xs=exercises.filter(x=>(f==="Todos"||x.m===f)&&(!q||(`${x.n} ${x.m} ${x.equip}`).toLowerCase().includes(q)));
  $("#exerciseCatalog").innerHTML=xs.map(ex=>`<article class="card exercise-card"><div class="exercise-visual"><img src="${mediaImg("exercise",ex.id,ex.img)}" alt="${esc(ex.n)}"></div><div class="exercise-body">
   <div class="muscle">${esc(ex.m)}</div><div class="exercise-name">${esc(ex.n)}</div><div class="tags"><span class="tag">${esc(ex.equip)}</span></div>
-  <p class="small"><b>Preparación:</b> ${esc(ex.setup)}</p><p class="small"><b>Ejecución:</b> ${esc(ex.how)}</p><p class="small"><b>Clave:</b> ${esc(ex.tip)}</p><div class="last-load">${(()=>{const l=lastExerciseStats(ex.id),pr=exercisePR(ex.id);return l?`Última: <strong>${l.weight} kg</strong> · PR ${pr} kg`:"Sin historial"})()}</div><div class="media-actions"><button class="btn primary sm" data-open-ex="${ex.id}">▶ Ver técnica</button><label class="btn ghost sm" style="margin:0">📷 Foto<input type="file" accept="image/*" capture="environment" data-photo-ex="${ex.id}" style="display:none"></label></div>
+  <p class="small"><b>Preparación:</b> ${esc(ex.setup)}</p><p class="small"><b>Ejecución:</b> ${esc(ex.how)}</p><p class="small"><b>Clave:</b> ${esc(ex.tip)}</p><div class="last-load">${(()=>{const l=lastExerciseStats(ex.id),pr=exercisePR(ex.id);return l?`Última: <strong>${l.weight} kg</strong> · PR ${pr} kg`:"Sin historial"})()}</div><div class="media-actions"><button class="btn primary sm" data-open-ex="${ex.id}">▶ Ver técnica</button><label class="btn ghost sm" style="margin:0">🖼️ Mi foto<input type="file" accept="image/*" capture="environment" data-photo-ex="${ex.id}" style="display:none"></label></div>
  </div></article>`).join("");
  $$("[data-open-ex]").forEach(el=>el.onclick=()=>openExercise(el.dataset.openEx));
  $$("[data-photo-ex]").forEach(el=>el.onchange=e=>savePhoto("exercise",el.dataset.photoEx,e.target.files[0]));
