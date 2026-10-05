@@ -1,3 +1,4 @@
+console.info("Mi Plan V3.1 loaded");
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const todayISO=()=>new Date().toISOString().slice(0,10);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
