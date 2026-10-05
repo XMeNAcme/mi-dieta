@@ -1,0 +1,36 @@
+MI PLAN V2 — DIETA + ENTRENAMIENTO
+====================================
+
+QUÉ INCLUYE
+- Mantiene la base de la app "Mi Dieta".
+- Dieta semanal con kcal, proteína, extras y platos personalizados.
+- Entrenamiento para la multiestación Corength Home Gym.
+- Rutinas por parejas musculares:
+  * Pecho ↔ Espalda
+  * Bíceps ↔ Tríceps
+  * Cuádriceps ↔ Isquios
+  * Hombros + Core
+- Formato por defecto: 3 ejercicios de cada grupo, 3 series de 10 repeticiones.
+- Registro de carga, repeticiones y series completadas.
+- Estimación orientativa de kcal del entrenamiento.
+- Pesaje y gráfica de evolución.
+- Historial de entrenamientos.
+- Exportar/importar copia de seguridad JSON.
+- PWA instalable y funcionamiento offline para los recursos locales.
+- Migración automática de la información guardada por la antigua "Mi Dieta" cuando se usa en el mismo dominio/navegador.
+
+CÓMO SUBIRLA AL MISMO GITHUB
+1. Entra en tu repositorio: XMeNAcme / mi-dieta.
+2. Haz primero una copia de seguridad del repositorio actual si quieres conservarla.
+3. Pulsa "Add file" > "Upload files".
+4. Sube TODOS los archivos y la carpeta assets de este paquete.
+5. Los archivos index.html, app.js, manifest.webmanifest y sw.js sustituyen a los actuales.
+6. Confirma el commit.
+7. GitHub Pages debería actualizar la misma dirección:
+   https://xmenacme.github.io/mi-dieta/
+8. Si ves la versión antigua, recarga forzada o cierra/abre la PWA. El service worker puede tardar una recarga en renovarse.
+
+IMPORTANTE
+- Las kcal de entrenamiento son una estimación, no una medición exacta.
+- La foto principal de la máquina se intenta cargar desde Decathlon. Si no hay conexión o deja de estar disponible, aparece una ilustración local.
+- Los ejercicios se han seleccionado para las posibilidades generales de la multiestación y accesorios incluidos. Ajusta o elimina cualquier movimiento que no resulte cómodo o adecuado.
