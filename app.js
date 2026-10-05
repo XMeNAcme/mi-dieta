@@ -1,4 +1,4 @@
-console.info("Mi Plan V3.1 loaded");
+console.info("Mi Plan V3.2 loaded");
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const todayISO=()=>new Date().toISOString().slice(0,10);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
@@ -28,6 +28,21 @@ const extras={
  "Almendras/anacardos 20 g":{k:120,p:4},"Helado (~200 kcal)":{k:200,p:3},"Whey + 250 ml leche":{k:245,p:32}
 };
 const days=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+
+const curatedMedia={
+ press_pecho:{
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Girl_doing_chest_press_machine_exercise.jpg/960px-Girl_doing_chest_press_machine_exercise.jpg",
+  video:"https://www.youtube.com/watch?v=lw4uUkBl_HE",
+  credit:"Foto: Tyler Read / PTPioneer · CC BY 2.0 · Wikimedia Commons"
+ },
+ pushdown:{
+  video:"https://www.youtube.com/watch?v=bluq3g4XIWg"
+ },
+ legext:{
+  video:"https://www.youtube.com/watch?v=rf5Nxw0vaOc"
+ }
+};
+
 
 const exercises=[
  {id:"press_pecho",m:"Pecho",n:"Press de pecho en máquina",equip:"Brazos de press",setup:"Asiento regulado para que las empuñaduras queden a la altura media del pecho.",how:"Escápulas apoyadas, pecho alto. Empuja sin bloquear los codos y vuelve controlando.",tip:"No despegues la espalda del respaldo.",img:"assets/ex-chestpress.svg"},
@@ -122,7 +137,7 @@ function calcDietEntry(i){
 }
 
 function mediaKey(type,id){return type+":"+id}
-function mediaImg(type,id,fallback){return state.media[mediaKey(type,id)]?.img||fallback}
+function mediaImg(type,id,fallback){return state.media[mediaKey(type,id)]?.img||curatedMedia[id]?.img||fallback}
 function lastExerciseStats(id){
  const rows=[];
  state.workouts.forEach(w=>(w.exercises||[]).forEach(ex=>{if(ex.id===id)rows.push({date:w.date,weight:+ex.weight||0,reps:+ex.reps||0,sets:(ex.sets||[]).filter(Boolean).length})}));
@@ -162,8 +177,8 @@ function openExercise(id){
  $("#modalTags").innerHTML='<span class="tag">'+esc(ex.equip)+'</span><span class="tag">3×10 por defecto</span>'+(pr?'<span class="tag">PR '+pr+' kg</span>':'');
  $("#modalSetup").innerHTML="<b>Preparación:</b> "+esc(ex.setup)+(last?'<br><b>Última vez:</b> '+last.weight+' kg · '+last.sets+' series × '+last.reps+' reps':'');
  $("#modalHow").innerHTML="<b>Ejecución:</b> "+esc(ex.how);
- $("#modalTip").innerHTML="<b>Clave:</b> "+esc(ex.tip);
- const saved=state.media[mediaKey("exercise",id)]?.video||"";
+ $("#modalTip").innerHTML="<b>Clave:</b> "+esc(ex.tip)+(curatedMedia[id]?.credit?"<br><br><b>Fuente imagen:</b> "+esc(curatedMedia[id].credit):"");
+ const saved=state.media[mediaKey("exercise",id)]?.video||curatedMedia[id]?.video||"";
  $("#exerciseVideoUrl").value=saved;
  $("#modalVideo").textContent=saved?"▶ Abrir vídeo guardado":"▶ Buscar vídeo";
  $("#modalVideo").onclick=()=>window.open(saved||youtubeSearch(ex),"_blank","noopener,noreferrer");
