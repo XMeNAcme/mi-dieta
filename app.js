@@ -68,7 +68,8 @@ const state={
  diet:JSON.parse(localStorage.getItem("miPlanDiet")||"{}"),
  workoutDraft:JSON.parse(localStorage.getItem("miPlanWorkoutDraft")||"{}"),
  workouts:JSON.parse(localStorage.getItem("miPlanWorkouts")||"[]"),
- weights:JSON.parse(localStorage.getItem("miPlanWeights")||"[]")
+ weights:JSON.parse(localStorage.getItem("miPlanWeights")||"[]"),
+ media:JSON.parse(localStorage.getItem("miPlanMedia")||"{}")
 };
 function meals(){return {...baseMeals,...state.customMeals}}
 function saveState(){
@@ -78,6 +79,7 @@ function saveState(){
  localStorage.setItem("miPlanWorkoutDraft",JSON.stringify(state.workoutDraft));
  localStorage.setItem("miPlanWorkouts",JSON.stringify(state.workouts));
  localStorage.setItem("miPlanWeights",JSON.stringify(state.weights));
+ localStorage.setItem("miPlanMedia",JSON.stringify(state.media));
 }
 function migrateOld(){
  if(localStorage.getItem("miPlanMigrated")) return;
@@ -117,6 +119,65 @@ function calcDietEntry(i){
  Object.keys(extras).forEach((x,j)=>{if(e.extras[j]){k+=extras[x].k;p+=extras[x].p}});
  return {k,p,a,b};
 }
+
+function mediaKey(type,id){return type+":"+id}
+function mediaImg(type,id,fallback){return state.media[mediaKey(type,id)]?.img||fallback}
+function lastExerciseStats(id){
+ const rows=[];
+ state.workouts.forEach(w=>(w.exercises||[]).forEach(ex=>{if(ex.id===id)rows.push({date:w.date,weight:+ex.weight||0,reps:+ex.reps||0,sets:(ex.sets||[]).filter(Boolean).length})}));
+ rows.sort((a,b)=>a.date.localeCompare(b.date));
+ return rows.length?rows[rows.length-1]:null;
+}
+function exercisePR(id){
+ let best=0;
+ state.workouts.forEach(w=>(w.exercises||[]).forEach(ex=>{if(ex.id===id)best=Math.max(best,+ex.weight||0)}));
+ return best;
+}
+function exerciseVolume(ex){return (+ex.weight||0)*(+ex.reps||0)*((ex.sets||[]).filter(Boolean).length)}
+function compressImage(file,max=900,q=.72){
+ return new Promise((resolve,reject)=>{
+  const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{let w=im.width,h=im.height;if(Math.max(w,h)>max){const f=max/Math.max(w,h);w=Math.round(w*f);h=Math.round(h*f)}const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);resolve(c.toDataURL("image/jpeg",q))};im.onerror=reject;im.src=r.result};
+  r.onerror=reject;r.readAsDataURL(file);
+ });
+}
+async function savePhoto(type,id,file){
+ if(!file)return;
+ try{
+  const img=await compressImage(file);
+  state.media[mediaKey(type,id)]={...(state.media[mediaKey(type,id)]||{}),img};saveState();
+  renderDiet();renderMealGallery();renderCatalog();renderRoutine();renderHome();
+ }catch(e){alert("No he podido preparar esa imagen.")}
+}
+function youtubeSearch(ex){
+ const q=encodeURIComponent(ex.n+" home gym polea técnica");
+ return "https://www.youtube.com/results?search_query="+q;
+}
+function openExercise(id){
+ const ex=exById(id); if(!ex)return;
+ const last=lastExerciseStats(id),pr=exercisePR(id);
+ $("#modalImg").src=mediaImg("exercise",id,ex.img);
+ $("#modalImg").alt=ex.n;$("#modalMuscle").textContent=ex.m;$("#modalTitle").textContent=ex.n;
+ $("#modalTags").innerHTML='<span class="tag">'+esc(ex.equip)+'</span><span class="tag">3×10 por defecto</span>'+(pr?'<span class="tag">PR '+pr+' kg</span>':'');
+ $("#modalSetup").innerHTML="<b>Preparación:</b> "+esc(ex.setup)+(last?'<br><b>Última vez:</b> '+last.weight+' kg · '+last.sets+' series × '+last.reps+' reps':'');
+ $("#modalHow").innerHTML="<b>Ejecución:</b> "+esc(ex.how);
+ $("#modalTip").innerHTML="<b>Clave:</b> "+esc(ex.tip);
+ $("#modalVideo").onclick=()=>window.open(youtubeSearch(ex),"_blank","noopener,noreferrer");
+ $("#exercisePhotoInput").onchange=e=>savePhoto("exercise",id,e.target.files[0]);
+ $("#exerciseModal").classList.add("open");$("#exerciseModal").setAttribute("aria-hidden","false");
+}
+function renderMealGallery(){
+ const root=$("#mealGallery"); if(!root)return;
+ const mm=meals(); const names=Object.keys(mm).filter(n=>n!=="— Selecciona —");
+ root.innerHTML=names.map(n=>{const m=mm[n],id=n;return '<button class="media-card" data-meal-gallery="'+esc(id)+'"><img src="'+mediaImg("meal",id,m.img)+'" alt=""><div class="media-meta"><div class="media-name">'+esc(n)+'</div><div class="media-sub">'+m.k+' kcal · '+m.p+' g proteína</div><div class="media-actions"><span class="iconbtn" data-photo-meal="'+esc(id)+'">📷 Foto</span></div></div></button>'}).join("");
+ $("[data-meal-gallery]").forEach(b=>b.onclick=e=>{if(e.target.closest("[data-photo-meal]"))return;const i=(new Date().getDay()+6)%7;dietEntry(i).meal=b.dataset.mealGallery;saveState();renderDiet();renderHome();b.classList.add("selected")});
+ $("[data-photo-meal]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();const id=b.dataset.photoMeal,input=document.createElement("input");input.type="file";input.accept="image/*";input.capture="environment";input.onchange=()=>savePhoto("meal",id,input.files[0]);input.click()});
+}
+function applyTheme(){
+ document.body.classList.toggle("dark",!!state.settings.dark);
+ const c=$("#darkMode");if(c)c.checked=!!state.settings.dark;
+}
+
 function classify(k,p){
  const s=state.settings;
  if(!k)return["Sin marcar",""];
@@ -133,15 +194,16 @@ function renderDiet(){
   const e=dietEntry(i), c=calcDietEntry(i), cl=classify(c.k,c.p);
   root.insertAdjacentHTML("beforeend",`<article class="card meal-day" data-day="${i}">
    <div class="meal-head"><div><h2>${d}</h2><div class="small">${weekDate(i)}</div></div><span class="badge ${cl[1]}">${cl[0]}</span></div>
-   <div class="mealpick"><img class="thumb" id="mealImg${i}" src="${c.a.img}" alt=""><div><label>Comida</label><select data-kind="meal" data-i="${i}">${optsMeals(e.meal)}</select><div class="small" id="mealDet${i}">${esc(c.a.d)}</div></div></div>
-   <div class="mealpick"><img class="thumb" id="dinImg${i}" src="${c.b.img}" alt=""><div><label>Cena</label><select data-kind="dinner" data-i="${i}">${optsMeals(e.dinner)}</select><div class="small" id="dinDet${i}">${esc(c.b.d)}</div></div></div>
+   <div class="mealpick"><img class="thumb" id="mealImg${i}" src="${mediaImg("meal",e.meal,c.a.img)}" alt=""><div><label>Comida</label><select data-kind="meal" data-i="${i}">${optsMeals(e.meal)}</select><div class="small" id="mealDet${i}">${esc(c.a.d)}</div></div></div>
+   <div class="mealpick"><img class="thumb" id="dinImg${i}" src="${mediaImg("meal",e.dinner,c.b.img)}" alt=""><div><label>Cena</label><select data-kind="dinner" data-i="${i}">${optsMeals(e.dinner)}</select><div class="small" id="dinDet${i}">${esc(c.b.d)}</div></div></div>
    <label>Extras / comodines</label>
    <div class="extras">${Object.keys(extras).map((x,j)=>`<label class="extra"><input type="checkbox" data-extra="${j}" data-i="${i}" ${e.extras[j]?"checked":""}><span>${esc(x)} · ${extras[x].k} kcal / ${extras[x].p} g</span></label>`).join("")}</div>
    <div class="nums"><div class="metric"><b>${c.k}</b><span>kcal</span></div><div class="metric"><b>${c.p} g</b><span>proteína</span></div><div class="metric"><b>${Math.max(0,state.settings.kMax-c.k)}</b><span>kcal hasta máx.</span></div></div>
   </article>`);
  });
  $$("[data-kind]").forEach(el=>el.onchange=()=>{const i=+el.dataset.i;dietEntry(i)[el.dataset.kind]=el.value;saveState();renderDiet();renderHome()});
- $$("[data-extra]").forEach(el=>el.onchange=()=>{const i=+el.dataset.i;dietEntry(i).extras[el.dataset.extra]=el.checked;saveState();renderDiet();renderHome()});
+ $("[data-extra]").forEach(el=>el.onchange=()=>{const i=+el.dataset.i;dietEntry(i).extras[el.dataset.extra]=el.checked;saveState();renderDiet();renderHome()});
+ renderMealGallery();
 }
 function todayDiet(){
  const day=(new Date().getDay()+6)%7; return calcDietEntry(day);
@@ -156,18 +218,19 @@ function renderRoutine(){
   root.insertAdjacentHTML("beforeend",`<section class="routine-block"><div class="routine-title"><h2>${esc(group)}</h2><span class="pill">3 ejercicios · 3×10</span></div><div class="grid3">${ids.map((id,idx)=>{
    const ex=exById(id), key=draftKey(id)+"#"+idx, d=state.workoutDraft[key]||{w:"",reps:10,sets:[false,false,false]};
    return `<article class="card exercise-card">
-    <div class="exercise-visual"><img src="${ex.img}" alt="${esc(ex.n)}"></div>
+    <div class="exercise-visual"><img src="${mediaImg("exercise",ex.id,ex.img)}" alt="${esc(ex.n)}"></div>
     <div class="exercise-body">
      <div class="muscle">${esc(ex.m)}</div><div class="exercise-name">${esc(ex.n)}</div>
      <div class="small">${esc(ex.setup)}</div>
-     <div class="tags"><span class="tag">${esc(ex.equip)}</span><span class="tag">3×10</span></div>
+     <div class="tags"><span class="tag">${esc(ex.equip)}</span><span class="tag">3×10</span></div><div class="last-load">${(()=>{const l=lastExerciseStats(ex.id);return l?`Última vez: <strong>${l.weight} kg</strong> · ${l.sets} series × ${l.reps}`:"Sin historial todavía"})()}</div><div class="media-actions"><button class="iconbtn" data-open-ex="${ex.id}">📷 Técnica / vídeo</button></div>
      <div class="weight-row"><div><label>Peso (kg)</label><input type="number" min="0" step="5" data-wkey="${esc(key)}" value="${esc(d.w)}" placeholder="0"></div><div><label>Reps</label><input type="number" min="1" max="50" data-rkey="${esc(key)}" value="${d.reps||10}"></div></div>
      <div class="sets">${[0,1,2].map(s=>`<button class="setbtn ${d.sets?.[s]?"done":""}" data-skey="${esc(key)}" data-set="${s}">Serie ${s+1}${d.sets?.[s]?" ✓":""}</button>`).join("")}</div>
      <details style="margin-top:8px"><summary>Técnica</summary><p class="small"><b>Cómo:</b> ${esc(ex.how)}<br><b>Clave:</b> ${esc(ex.tip)}</p></details>
     </div></article>`;
   }).join("")}</div></section>`);
  });
- $$("[data-wkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.wkey;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].w=el.value;saveState()});
+ $("[data-open-ex]").forEach(el=>el.onclick=()=>openExercise(el.dataset.openEx));
+ $("[data-wkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.wkey;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].w=el.value;saveState()});
  $$("[data-rkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.rkey;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].reps=+el.value||10;saveState()});
  $$("[data-skey]").forEach(el=>el.onclick=()=>{const k=el.dataset.skey,s=+el.dataset.set;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].sets[s]=!state.workoutDraft[k].sets[s];saveState();renderRoutine();updateSessionSummary()});
  updateSessionSummary();
@@ -188,10 +251,12 @@ function renderCatalog(){
  if($("#muscleFilter").options.length===1) ms.slice(1).forEach(m=>$("#muscleFilter").insertAdjacentHTML("beforeend",`<option>${esc(m)}</option>`));
  const f=$("#muscleFilter").value,q=$("#exerciseSearch").value.trim().toLowerCase();
  const xs=exercises.filter(x=>(f==="Todos"||x.m===f)&&(!q||(`${x.n} ${x.m} ${x.equip}`).toLowerCase().includes(q)));
- $("#exerciseCatalog").innerHTML=xs.map(ex=>`<article class="card exercise-card"><div class="exercise-visual"><img src="${ex.img}" alt="${esc(ex.n)}"></div><div class="exercise-body">
+ $("#exerciseCatalog").innerHTML=xs.map(ex=>`<article class="card exercise-card"><div class="exercise-visual"><img src="${mediaImg("exercise",ex.id,ex.img)}" alt="${esc(ex.n)}"></div><div class="exercise-body">
   <div class="muscle">${esc(ex.m)}</div><div class="exercise-name">${esc(ex.n)}</div><div class="tags"><span class="tag">${esc(ex.equip)}</span></div>
-  <p class="small"><b>Preparación:</b> ${esc(ex.setup)}</p><p class="small"><b>Ejecución:</b> ${esc(ex.how)}</p><p class="small"><b>Clave:</b> ${esc(ex.tip)}</p>
+  <p class="small"><b>Preparación:</b> ${esc(ex.setup)}</p><p class="small"><b>Ejecución:</b> ${esc(ex.how)}</p><p class="small"><b>Clave:</b> ${esc(ex.tip)}</p><div class="last-load">${(()=>{const l=lastExerciseStats(ex.id),pr=exercisePR(ex.id);return l?`Última: <strong>${l.weight} kg</strong> · PR ${pr} kg`:"Sin historial"})()}</div><div class="media-actions"><button class="btn primary sm" data-open-ex="${ex.id}">▶ Ver técnica</button><label class="btn ghost sm" style="margin:0">📷 Foto<input type="file" accept="image/*" capture="environment" data-photo-ex="${ex.id}" style="display:none"></label></div>
  </div></article>`).join("");
+ $("[data-open-ex]").forEach(el=>el.onclick=()=>openExercise(el.dataset.openEx));
+ $("[data-photo-ex]").forEach(el=>el.onchange=e=>savePhoto("exercise",el.dataset.photoEx,e.target.files[0]));
 }
 function latestWorkoutBurnToday(){
  return state.workouts.filter(w=>w.date===todayISO()).reduce((a,w)=>a+(w.burn||0),0);
@@ -222,11 +287,12 @@ function saveWorkout(){
 }
 function renderProgress(){
  $("#setKcalMin").value=state.settings.kMin;$("#setKcalMax").value=state.settings.kMax;$("#setProtMin").value=state.settings.pMin;$("#setProtMax").value=state.settings.pMax;$("#setBodyWeight").value=state.settings.bodyWeight||"";
- $("#progWorkouts").textContent=state.workouts.length;$("#progSets").textContent=state.workouts.reduce((a,w)=>a+w.sets,0);$("#progBurn").textContent=state.workouts.reduce((a,w)=>a+(w.burn||0),0);
+ $("#progWorkouts").textContent=state.workouts.length;$("#progSets").textContent=state.workouts.reduce((a,w)=>a+w.sets,0);$("#progBurn").textContent=state.workouts.reduce((a,w)=>a+(w.burn||0),0);const totalVol=Math.round(state.workouts.reduce((a,w)=>a+(w.exercises||[]).reduce((s,ex)=>s+exerciseVolume(ex),0),0));$("#progVolume").textContent=totalVol.toLocaleString("es-ES");
  if(state.workouts.length){const last=state.workouts[state.workouts.length-1];$("#progBest").textContent=`Última sesión: ${last.date} · ${last.routineName} · ${last.sets}/18 series`;}
  else $("#progBest").textContent="Sin entrenamientos guardados todavía.";
  const hs=[...state.workouts].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12);
  $("#workoutHistory").innerHTML=hs.length?`<table class="table"><thead><tr><th>Fecha</th><th>Rutina</th><th>Series</th><th>Kcal est.</th></tr></thead><tbody>${hs.map(w=>`<tr><td>${w.date}</td><td>${esc(w.routineName)}</td><td>${w.sets}/18</td><td>${w.burn||0}</td></tr>`).join("")}</tbody></table>`:"<p class='small'>Todavía no hay sesiones.</p>";
+ const prs=exercises.map(ex=>({n:ex.n,m:ex.m,kg:exercisePR(ex.id)})).filter(x=>x.kg>0).sort((a,b)=>b.kg-a.kg);$("#prTable").innerHTML=prs.length?`<table class="table"><thead><tr><th>Ejercicio</th><th>Grupo</th><th>PR</th></tr></thead><tbody>${prs.slice(0,12).map(x=>`<tr><td>${esc(x.n)}</td><td>${esc(x.m)}</td><td><b>${x.kg} kg</b></td></tr>`).join("")}</tbody></table>`:"<p class='small'>Guarda entrenamientos para crear tus récords automáticamente.</p>";
  const wt=[...state.weights].sort((a,b)=>a.date.localeCompare(b.date));
  $("#weightTable").innerHTML=wt.length?`<table class="table"><thead><tr><th>Fecha</th><th>Peso</th></tr></thead><tbody>${wt.slice(-10).reverse().map(w=>`<tr><td>${w.date}</td><td>${w.kg.toFixed(1)} kg</td></tr>`).join("")}</tbody></table>`:"<p class='small'>Todavía no hay pesajes.</p>";
  drawWeightChart(wt.slice(-20));
@@ -247,7 +313,7 @@ function init(){
  $("#todayLabel").textContent=new Intl.DateTimeFormat("es-ES",{weekday:"short",day:"numeric",month:"short"}).format(new Date());
  routines.forEach(r=>$("#routineSelect").insertAdjacentHTML("beforeend",`<option value="${r.id}">${esc(r.name)}</option>`));
  $("#workoutDate").value=todayISO();
- renderDiet();renderCatalog();renderRoutine();renderHome();renderProgress();
+ applyTheme();renderDiet();renderMealGallery();renderCatalog();renderRoutine();renderHome();renderProgress();
 
  $$(".tabbtn").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
  $$("[data-goto]").forEach(b=>b.onclick=()=>setTab(b.dataset.goto));
@@ -255,11 +321,12 @@ function init(){
  $("#routineSelect").onchange=renderRoutine;$("#workoutMinutes").oninput=updateSessionSummary;$("#workoutIntensity").onchange=updateSessionSummary;
  $("#muscleFilter").onchange=renderCatalog;$("#exerciseSearch").oninput=renderCatalog;
  $("#finishWorkout").onclick=saveWorkout;
+ $("#modalClose").onclick=()=>$("#exerciseModal").classList.remove("open");$("#exerciseModal").onclick=e=>{if(e.target.id==="exerciseModal")$("#exerciseModal").classList.remove("open")};
  $("#saveQuickWeight").onclick=()=>{const kg=parseFloat($("#quickWeight").value);if(!kg)return alert("Escribe un peso válido.");state.weights=state.weights.filter(x=>x.date!==todayISO());state.weights.push({date:todayISO(),kg});state.settings.bodyWeight=kg;saveState();$("#quickWeight").value="";renderHome();renderProgress();alert("Peso guardado ✅")};
- $("#saveSettings").onclick=()=>{state.settings={kMin:+$("#setKcalMin").value||1900,kMax:+$("#setKcalMax").value||2000,pMin:+$("#setProtMin").value||130,pMax:+$("#setProtMax").value||150,bodyWeight:$("#setBodyWeight").value};saveState();renderDiet();renderHome();updateSessionSummary();alert("Objetivos guardados ✅")};
+ $("#saveSettings").onclick=()=>{state.settings={...state.settings,kMin:+$("#setKcalMin").value||1900,kMax:+$("#setKcalMax").value||2000,pMin:+$("#setProtMin").value||130,pMax:+$("#setProtMax").value||150,bodyWeight:$("#setBodyWeight").value,dark:$("#darkMode").checked};saveState();applyTheme();renderDiet();renderHome();updateSessionSummary();alert("Objetivos guardados ✅")};
  $("#addCustomMeal").onclick=()=>{const n=$("#customMealName").value.trim(),k=+$("#customMealKcal").value,p=+$("#customMealProt").value,d=$("#customMealDetail").value.trim();if(!n||!k)return alert("Añade nombre y calorías.");state.customMeals[n]={k,p,d,img:"assets/meal-custom.svg"};saveState();["#customMealName","#customMealKcal","#customMealProt","#customMealDetail"].forEach(s=>$(s).value="");renderDiet();alert("Plato añadido ✅")};
- $("#exportData").onclick=()=>{const data={version:2,exportedAt:new Date().toISOString(),settings:state.settings,customMeals:state.customMeals,diet:state.diet,workouts:state.workouts,weights:state.weights};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`mi-plan-backup-${todayISO()}.json`;a.click();URL.revokeObjectURL(a.href)};
- $("#importData").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());state.settings={...defaultSettings,...(x.settings||{})};state.customMeals=x.customMeals||{};state.diet=x.diet||{};state.workouts=x.workouts||[];state.weights=x.weights||[];saveState();location.reload()}catch(err){alert("No he podido leer ese JSON.")}};
+ $("#exportData").onclick=()=>{const data={version:3,exportedAt:new Date().toISOString(),settings:state.settings,customMeals:state.customMeals,diet:state.diet,workouts:state.workouts,weights:state.weights,media:state.media};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`mi-plan-backup-${todayISO()}.json`;a.click();URL.revokeObjectURL(a.href)};
+ $("#importData").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());state.settings={...defaultSettings,...(x.settings||{})};state.customMeals=x.customMeals||{};state.diet=x.diet||{};state.workouts=x.workouts||[];state.weights=x.weights||[];state.media=x.media||{};saveState();location.reload()}catch(err){alert("No he podido leer ese JSON.")}};
  $("#resetAll").onclick=()=>{if(confirm("¿Seguro que quieres borrar dieta, entrenamientos, pesos y ajustes?")){Object.keys(localStorage).filter(k=>k.startsWith("miPlan")).forEach(k=>localStorage.removeItem(k));location.reload()}};
 }
 if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
