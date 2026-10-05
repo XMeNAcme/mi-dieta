@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" role="img" aria-label="Jalón al pecho: inicio y final">
+<defs>
+ <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#eef6ff"/><stop offset="1" stop-color="#f5f3ff"/></linearGradient>
+ <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+ <style>.m{stroke:#334155;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;fill:none}.skin{stroke:#d58a57;stroke-width:20;stroke-linecap:round;fill:none}.shirt{stroke:#2563eb;stroke-width:26;stroke-linecap:round}.head{fill:#e7a56d;stroke:#8b5e3c;stroke-width:4}.seat{fill:#1f2937}.frame{stroke:#475569;stroke-width:18;stroke-linecap:round;fill:none}.cable{stroke:#111827;stroke-width:5;fill:none}.arrow{stroke:#2563eb;stroke-width:10;fill:none;marker-end:url(#arrow)}</style>
+</defs><rect width="900" height="520" rx="36" fill="url(#bg)"/>
+<g opacity=".18"><line x1="450" y1="40" x2="450" y2="480" stroke="#64748b" stroke-width="3" stroke-dasharray="8 10"/></g>
+<path class="frame" d="M95 450 V80 H250 M650 450 V80 H805"/><path class="frame" d="M95 450 H275 M625 450 H805"/>
+<path class="frame" d="M120 95 H300 M600 95 H780"/>
+<g><circle class="head" cx="210" cy="205" r="30"/><path d="M185 187 Q210 160 236 187" stroke="#3f2d20" stroke-width="12" fill="none" stroke-linecap="round"/><line class="shirt" x1="210" y1="240" x2="210" y2="335"/><rect class="seat" x="165" y="350" width="90" height="22" rx="10"/><line class="skin" x1="210" y1="250" x2="150" y2="130"/><line class="skin" x1="210" y1="250" x2="270" y2="130"/><line class="m" x1="135" y1="120" x2="285" y2="120"/><line class="skin" x1="190" y1="335" x2="175" y2="420"/><line class="skin" x1="230" y1="335" x2="245" y2="420"/></g>
+<g><circle class="head" cx="690" cy="205" r="30"/><path d="M665 187 Q690 160 716 187" stroke="#3f2d20" stroke-width="12" fill="none" stroke-linecap="round"/><line class="shirt" x1="690" y1="240" x2="690" y2="335"/><rect class="seat" x="645" y="350" width="90" height="22" rx="10"/><line class="skin" x1="690" y1="250" x2="650" y2="210"/><line class="skin" x1="690" y1="250" x2="730" y2="210"/><line class="m" x1="635" y1="200" x2="745" y2="200"/><line class="skin" x1="670" y1="335" x2="655" y2="420"/><line class="skin" x1="710" y1="335" x2="725" y2="420"/></g><path class="arrow" d="M450 120 V205"/>
+</svg>
