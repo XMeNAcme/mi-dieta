@@ -156,7 +156,7 @@ function calcDietEntry(i){
 }
 
 function mediaKey(type,id){return type+":"+id}
-function mediaImg(type,id,fallback){return state.media[mediaKey(type,id)]?.img||(type==="exercise"&&guideArt[id])||curatedMedia[id]?.img||fallback}
+function mediaImg(type,id,fallback){return state.media[mediaKey(type,id)]?.img||curatedMedia[id]?.img||fallback}
 function lastExerciseStats(id){
  const rows=[];
  state.workouts.forEach(w=>(w.exercises||[]).forEach(ex=>{if(ex.id===id)rows.push({date:w.date,weight:+ex.weight||0,reps:+ex.reps||0,sets:(ex.sets||[]).filter(Boolean).length})}));
