@@ -1,4 +1,4 @@
-console.info("Mi Plan V3.4.2 loaded");
+console.info("Mi Plan V3.4.3 loaded");
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const todayISO=()=>new Date().toISOString().slice(0,10);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
@@ -156,7 +156,7 @@ function calcDietEntry(i){
 }
 
 function mediaKey(type,id){return type+":"+id}
-function mediaImg(type,id,fallback){return state.media[mediaKey(type,id)]?.img||curatedMedia[id]?.img||fallback}
+function mediaImg(type,id,fallback){return state.media[mediaKey(type,id)]?.img||curatedMedia[id]?.img||(type==="exercise"&&guideArt[id])||fallback}
 function lastExerciseStats(id){
  const rows=[];
  state.workouts.forEach(w=>(w.exercises||[]).forEach(ex=>{if(ex.id===id)rows.push({date:w.date,weight:+ex.weight||0,reps:+ex.reps||0,sets:(ex.sets||[]).filter(Boolean).length})}));
@@ -263,7 +263,7 @@ function renderRoutine(){
   root.insertAdjacentHTML("beforeend",`<section class="routine-block"><div class="routine-title"><h2>${esc(group)}</h2><span class="pill">3 ejercicios · 3×10</span></div><div class="grid3">${ids.map((id,idx)=>{
    const ex=exById(id), key=draftKey(id)+"#"+idx, d=state.workoutDraft[key]||{w:"",reps:10,sets:[false,false,false]};
    return `<article class="card exercise-card">
-    <div class="exercise-visual"><img src="${mediaImg("exercise",ex.id,ex.img)}" alt="${esc(ex.n)}"></div>
+    <div class="exercise-visual" role="img" aria-label="${esc(ex.n)}" style="background-image:url(&quot;${mediaImg("exercise",ex.id,ex.img)}&quot;)"></div>
     <div class="exercise-body">
      <div class="muscle">${esc(ex.m)}</div><div class="exercise-name">${esc(ex.n)}</div>
      <div class="small">${esc(ex.setup)}</div>
@@ -296,7 +296,7 @@ function renderCatalog(){
  if($("#muscleFilter").options.length===1) ms.slice(1).forEach(m=>$("#muscleFilter").insertAdjacentHTML("beforeend",`<option>${esc(m)}</option>`));
  const f=$("#muscleFilter").value,q=$("#exerciseSearch").value.trim().toLowerCase();
  const xs=exercises.filter(x=>(f==="Todos"||x.m===f)&&(!q||(`${x.n} ${x.m} ${x.equip}`).toLowerCase().includes(q)));
- $("#exerciseCatalog").innerHTML=xs.map(ex=>`<article class="card exercise-card"><div class="exercise-visual"><img src="${mediaImg("exercise",ex.id,ex.img)}" alt="${esc(ex.n)}"></div><div class="exercise-body">
+ $("#exerciseCatalog").innerHTML=xs.map(ex=>`<article class="card exercise-card"><div class="exercise-visual" role="img" aria-label="${esc(ex.n)}" style="background-image:url(&quot;${mediaImg("exercise",ex.id,ex.img)}&quot;)"></div><div class="exercise-body">
   <div class="muscle">${esc(ex.m)}</div><div class="exercise-name">${esc(ex.n)}</div><div class="tags"><span class="tag">${esc(ex.equip)}</span></div>
   <p class="small"><b>Preparación:</b> ${esc(ex.setup)}</p><p class="small"><b>Ejecución:</b> ${esc(ex.how)}</p><p class="small"><b>Clave:</b> ${esc(ex.tip)}</p><div class="last-load">${(()=>{const l=lastExerciseStats(ex.id),pr=exercisePR(ex.id);return l?`Última: <strong>${l.weight} kg</strong> · PR ${pr} kg`:"Sin historial"})()}</div><div class="media-actions"><button class="btn primary sm" data-open-ex="${ex.id}">▶ Ver técnica</button><label class="btn ghost sm" style="margin:0">🖼️ Mi foto<input type="file" accept="image/*" capture="environment" data-photo-ex="${ex.id}" style="display:none"></label></div>
  </div></article>`).join("");
