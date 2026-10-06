@@ -29,20 +29,20 @@ const extras={
 };
 const days=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 const guideArt={
- press_pecho:"assets/guide-chestpress.svg",
- butterfly:"assets/guide-butterfly.svg",
- cruce_bajo:"assets/guide-chestpress.svg",
- jalon_ancho:"assets/guide-latpulldown.svg",
- jalon_supino:"assets/guide-latpulldown.svg",
- remo_sentado:"assets/guide-row.svg",
- curl_barra:"assets/guide-biceps.svg",
- curl_unilateral:"assets/guide-biceps.svg",
- curl_cruzado:"assets/guide-biceps.svg",
- pushdown:"assets/guide-triceps.svg",
- pushdown_uni:"assets/guide-triceps.svg",
- triceps_overhead:"assets/guide-triceps.svg",
- legext:"assets/guide-legext.svg",
- hamcurl:"assets/guide-hamcurl.svg"
+ press_pecho:"assets/ex-chestpress-male.svg",
+ butterfly:"assets/ex-butterfly-male.svg",
+ cruce_bajo:"assets/ex-chestpress-male.svg",
+ jalon_ancho:"assets/ex-latpulldown-male.svg",
+ jalon_supino:"assets/ex-latpulldown-male.svg",
+ remo_sentado:"assets/ex-row-male.svg",
+ curl_barra:"assets/ex-biceps-male.svg",
+ curl_unilateral:"assets/ex-biceps-male.svg",
+ curl_cruzado:"assets/ex-biceps-male.svg",
+ pushdown:"assets/ex-triceps-male.svg",
+ pushdown_uni:"assets/ex-triceps-male.svg",
+ triceps_overhead:"assets/ex-triceps-male.svg",
+ legext:"assets/ex-legext-male.svg",
+ hamcurl:"assets/ex-hamcurl-male.svg"
 };
 
 
@@ -81,8 +81,8 @@ const exercises=[
  {id:"facepull_uni",m:"Hombros",n:"Tirón alto unilateral",equip:"Polea alta + asa",setup:"Un brazo cada vez, cable aproximadamente a la altura de la cara.",how:"Tira llevando codo hacia atrás y mano hacia el lateral de la cara.",tip:"Carga ligera y control.",img:"assets/ex-shoulder.svg"},
  {id:"legext",m:"Cuádriceps",n:"Extensión de piernas",equip:"Módulo de piernas",setup:"Rodillo sobre la parte baja de las espinillas.",how:"Extiende las rodillas y baja sin dejar caer la carga.",tip:"No golpees el tope.",img:"assets/ex-legext-male.svg"},
  {id:"split",m:"Cuádriceps",n:"Tijeras / zancadas con peso corporal",equip:"Peso corporal",setup:"Paso largo y estable.",how:"Desciende con control y vuelve empujando el suelo.",tip:"Rodilla alineada con el pie.",img:"assets/ex-legs.svg"},
- {id:"hamcurl",m:"Isquios",n:"Curl de isquios en polea baja",equip:"Polea baja + correa de tobillo",setup:"De pie, sujeto a la máquina si hace falta.",how:"Flexiona la rodilla llevando el talón hacia atrás.",tip:"Cadera estable.",img:"assets/ex-ham.svg"},
- {id:"pullthrough",m:"Isquios",n:"Bisagra de cadera con polea baja",equip:"Polea baja + asa/cable",setup:"De espaldas a la polea, pies firmes.",how:"Lleva cadera atrás y extiéndela al volver.",tip:"Espalda neutra; carga moderada.",img:"assets/ex-ham.svg"},
+ {id:"hamcurl",m:"Isquios",n:"Curl de isquios en polea baja",equip:"Polea baja + correa de tobillo",setup:"De pie, sujeto a la máquina si hace falta.",how:"Flexiona la rodilla llevando el talón hacia atrás.",tip:"Cadera estable.",img:"assets/ex-hamcurl-male.svg"},
+ {id:"pullthrough",m:"Isquios",n:"Bisagra de cadera con polea baja",equip:"Polea baja + asa/cable",setup:"De espaldas a la polea, pies firmes.",how:"Lleva cadera atrás y extiéndela al volver.",tip:"Espalda neutra; carga moderada.",img:"assets/ex-hamcurl-male.svg"},
  {id:"aductor",m:"Aductores",n:"Aducción de cadera en polea baja",equip:"Polea baja + correa tobillo",setup:"De lado, pierna de trabajo alejada de la máquina.",how:"Cruza suavemente la pierna hacia dentro.",tip:"Movimiento corto y controlado.",img:"assets/ex-hips.svg"},
  {id:"abductor",m:"Glúteos",n:"Abducción de cadera en polea baja",equip:"Polea baja + correa tobillo",setup:"De lado, pierna de trabajo más alejada.",how:"Separa la pierna lateralmente sin inclinarte.",tip:"Evita compensar con el tronco.",img:"assets/ex-hips.svg"},
  {id:"kickback",m:"Glúteos",n:"Patada de glúteo en polea baja",equip:"Polea baja + correa tobillo",setup:"De frente a la máquina, apoyo estable.",how:"Lleva la pierna hacia atrás sin arquear la zona lumbar.",tip:"Recorrido moderado.",img:"assets/ex-hips.svg"},
