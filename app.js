@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const todayISO=()=>new Date().toISOString().slice(0,10);
+const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
 
 const baseMeals={
@@ -61,7 +61,7 @@ const routines=[
  {id:"hombro_core",name:"Hombros + Core",a:"Hombros",b:"Abdominales / Glúteos",ex:["elev_frontal","remo_vertical","facepull_uni","crunch","abductor","kickback"]}
 ];
 
-const defaultSettings={kMin:1900,kMax:2000,pMin:130,pMax:150,bodyWeight:""};
+const defaultSettings={kMin:1900,kMax:2000,pMin:130,pMax:150,bodyWeight:"",restSeconds:90,restAuto:true};
 const state={
  settings:{...defaultSettings,...JSON.parse(localStorage.getItem("miPlanSettings")||"{}")},
  customMeals:JSON.parse(localStorage.getItem("miPlanCustomMeals")||"{}"),
@@ -79,6 +79,7 @@ function saveState(){
  localStorage.setItem("miPlanWorkoutDraft",JSON.stringify(state.workoutDraft));
  localStorage.setItem("miPlanWorkouts",JSON.stringify(state.workouts));
  localStorage.setItem("miPlanWeights",JSON.stringify(state.weights));
+ noteDataSaved();
 }
 function migrateOld(){
  if(localStorage.getItem("miPlanMigrated")) return;
@@ -155,22 +156,23 @@ function renderRoutine(){
  [r.a,r.b].forEach((group,gi)=>{
   const ids=r.ex.slice(gi*3,gi*3+3);
   root.insertAdjacentHTML("beforeend",`<section class="routine-block"><div class="routine-title"><h2>${esc(group)}</h2><span class="pill">3 ejercicios · 3×10</span></div><div class="grid3">${ids.map((id,idx)=>{
-   const ex=exById(id), key=draftKey(id)+"#"+idx, d=state.workoutDraft[key]||{w:"",reps:10,sets:[false,false,false]};
+   const ex=exById(id), key=draftKey(id)+"#"+idx, d=exerciseDraft(id,key);
    return `<article class="card exercise-card">
-    <div class="exercise-visual"><img src="${ex.img}" alt="${esc(ex.n)}"></div>
+    <button type="button" class="exercise-visual zoom-image" data-image-exercise="${ex.id}" aria-label="Ampliar imagen de ${esc(ex.n)}"><img src="${ex.img}" alt="${esc(ex.n)}"><span class="image-zoom-hint" aria-hidden="true">⤢ Ampliar</span></button>
     <div class="exercise-body">
      <div class="muscle">${esc(ex.m)}</div><div class="exercise-name">${esc(ex.n)}</div>
      <div class="small">${esc(ex.setup)}</div>
-     <div class="tags"><span class="tag">${esc(ex.equip)}</span><span class="tag">3×10</span></div>
+     <div class="tags"><span class="tag">${esc(ex.equip)}</span><span class="tag">3 series</span></div>
+     ${lastExerciseLoad(id)?`<p class="small last-load">Última sesión: ${kgLabel(lastExerciseLoad(id).weight)} × ${lastExerciseLoad(id).reps} reps · ${esc(lastExerciseLoad(id).date)}</p>`:""}
      <div class="weight-row"><div><label>Peso (kg)</label><input type="number" min="0" step="5" data-wkey="${esc(key)}" value="${esc(d.w)}" placeholder="0"></div><div><label>Reps</label><input type="number" min="1" max="50" data-rkey="${esc(key)}" value="${d.reps||10}"></div></div>
      <div class="sets">${[0,1,2].map(s=>`<button class="setbtn ${d.sets?.[s]?"done":""}" data-skey="${esc(key)}" data-set="${s}">Serie ${s+1}${d.sets?.[s]?" ✓":""}</button>`).join("")}</div>
      <details style="margin-top:8px"><summary>Técnica</summary><p class="small"><b>Cómo:</b> ${esc(ex.how)}<br><b>Clave:</b> ${esc(ex.tip)}</p></details>
     </div></article>`;
   }).join("")}</div></section>`);
  });
- $$("[data-wkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.wkey;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].w=el.value;saveState()});
- $$("[data-rkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.rkey;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].reps=+el.value||10;saveState()});
- $$("[data-skey]").forEach(el=>el.onclick=()=>{const k=el.dataset.skey,s=+el.dataset.set;state.workoutDraft[k]=state.workoutDraft[k]||{w:"",reps:10,sets:[false,false,false]};state.workoutDraft[k].sets[s]=!state.workoutDraft[k].sets[s];saveState();renderRoutine();updateSessionSummary()});
+ $$("[data-wkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.wkey;draftForEdit(k);state.workoutDraft[k].w=el.value;saveState()});
+ $$("[data-rkey]").forEach(el=>el.oninput=()=>{const k=el.dataset.rkey;draftForEdit(k);state.workoutDraft[k].reps=+el.value||10;saveState()});
+ $$("[data-skey]").forEach(el=>el.onclick=()=>{const k=el.dataset.skey,s=+el.dataset.set;draftForEdit(k);state.workoutDraft[k].sets[s]=!state.workoutDraft[k].sets[s];saveState();if(state.workoutDraft[k].sets[s]&&state.settings.restAuto!==false)startRest();renderRoutine();updateSessionSummary()});
  updateSessionSummary();
 }
 function workoutBurn(){
@@ -189,7 +191,7 @@ function renderCatalog(){
  if($("#muscleFilter").options.length===1) ms.slice(1).forEach(m=>$("#muscleFilter").insertAdjacentHTML("beforeend",`<option>${esc(m)}</option>`));
  const f=$("#muscleFilter").value,q=$("#exerciseSearch").value.trim().toLowerCase();
  const xs=exercises.filter(x=>(f==="Todos"||x.m===f)&&(!q||(`${x.n} ${x.m} ${x.equip}`).toLowerCase().includes(q)));
- $("#exerciseCatalog").innerHTML=xs.map(ex=>`<article class="card exercise-card"><div class="exercise-visual"><img src="${ex.img}" alt="${esc(ex.n)}"></div><div class="exercise-body">
+ $("#exerciseCatalog").innerHTML=xs.map(ex=>`<article class="card exercise-card"><button type="button" class="exercise-visual zoom-image" data-image-exercise="${ex.id}" aria-label="Ampliar imagen de ${esc(ex.n)}"><img src="${ex.img}" alt="${esc(ex.n)}"><span class="image-zoom-hint" aria-hidden="true">⤢ Ampliar</span></button><div class="exercise-body">
   <div class="muscle">${esc(ex.m)}</div><div class="exercise-name">${esc(ex.n)}</div><div class="tags"><span class="tag">${esc(ex.equip)}</span></div>
   <p class="small"><b>Preparación:</b> ${esc(ex.setup)}</p><p class="small"><b>Ejecución:</b> ${esc(ex.how)}</p><p class="small"><b>Clave:</b> ${esc(ex.tip)}</p>
  </div></article>`).join("");
@@ -215,11 +217,11 @@ function renderWeightTrend(){
 }
 function saveWorkout(){
  const r=currentRoutine(), exs=[]; let sets=0;
- r.ex.forEach((id,idx)=>{const key=`${r.id}:${id}#${idx%3}`,d=state.workoutDraft[key]||{w:"",reps:10,sets:[false,false,false]},ex=exById(id);sets+=d.sets.filter(Boolean).length;exs.push({id,name:ex.n,muscle:ex.m,weight:parseFloat(d.w)||0,reps:d.reps||10,sets:d.sets})});
+ r.ex.forEach((id,idx)=>{const key=`${r.id}:${id}#${idx%3}`,d=exerciseDraft(id,key),ex=exById(id);sets+=d.sets.filter(Boolean).length;exs.push({id,name:ex.n,muscle:ex.m,weight:parseFloat(d.w)||0,reps:d.reps||10,sets:d.sets})});
  if(sets===0 && !confirm("No has marcado ninguna serie. ¿Guardar igualmente?"))return;
  state.workouts.push({id:Date.now(),date:$("#workoutDate").value||todayISO(),routine:r.id,routineName:r.name,minutes:+$("#workoutMinutes").value||0,intensity:+$("#workoutIntensity").value||5,burn:workoutBurn()||0,sets,exercises:exs});
  r.ex.forEach((id,idx)=>delete state.workoutDraft[`${r.id}:${id}#${idx%3}`]);
- saveState();renderRoutine();renderHome();alert("Entrenamiento guardado ✅");
+ saveState();cancelRest();renderRoutine();renderHome();alert("Entrenamiento guardado ✅");
 }
 function renderProgress(){
  $("#setKcalMin").value=state.settings.kMin;$("#setKcalMax").value=state.settings.kMax;$("#setProtMin").value=state.settings.pMin;$("#setProtMax").value=state.settings.pMax;$("#setBodyWeight").value=state.settings.bodyWeight||"";
@@ -230,7 +232,7 @@ function renderProgress(){
  $("#workoutHistory").innerHTML=hs.length?`<table class="table"><thead><tr><th>Fecha</th><th>Rutina</th><th>Series</th><th>Kcal est.</th></tr></thead><tbody>${hs.map(w=>`<tr><td>${w.date}</td><td>${esc(w.routineName)}</td><td>${w.sets}/18</td><td>${w.burn||0}</td></tr>`).join("")}</tbody></table>`:"<p class='small'>Todavía no hay sesiones.</p>";
  const wt=[...state.weights].sort((a,b)=>a.date.localeCompare(b.date));
  $("#weightTable").innerHTML=wt.length?`<table class="table"><thead><tr><th>Fecha</th><th>Peso</th></tr></thead><tbody>${wt.slice(-10).reverse().map(w=>`<tr><td>${w.date}</td><td>${w.kg.toFixed(1)} kg</td></tr>`).join("")}</tbody></table>`:"<p class='small'>Todavía no hay pesajes.</p>";
- drawWeightChart(wt.slice(-20));
+ drawWeightChart(wt.slice(-20));renderExerciseProgress();renderBackupReminder();
 }
 function drawWeightChart(data){
  const c=$("#weightChart"),ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
@@ -248,7 +250,7 @@ function init(){
  $("#todayLabel").textContent=new Intl.DateTimeFormat("es-ES",{weekday:"short",day:"numeric",month:"short"}).format(new Date());
  routines.forEach(r=>$("#routineSelect").insertAdjacentHTML("beforeend",`<option value="${r.id}">${esc(r.name)}</option>`));
  $("#workoutDate").value=todayISO();
- renderDiet();renderCatalog();renderRoutine();renderHome();renderProgress();
+ renderDiet();renderCatalog();renderRoutine();renderHome();renderProgress();initEnhancements();
 
  $$(".tabbtn").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
  $$("[data-goto]").forEach(b=>b.onclick=()=>setTab(b.dataset.goto));
@@ -257,10 +259,10 @@ function init(){
  $("#muscleFilter").onchange=renderCatalog;$("#exerciseSearch").oninput=renderCatalog;
  $("#finishWorkout").onclick=saveWorkout;
  $("#saveQuickWeight").onclick=()=>{const kg=parseFloat($("#quickWeight").value);if(!kg)return alert("Escribe un peso válido.");state.weights=state.weights.filter(x=>x.date!==todayISO());state.weights.push({date:todayISO(),kg});state.settings.bodyWeight=kg;saveState();$("#quickWeight").value="";renderHome();renderProgress();alert("Peso guardado ✅")};
- $("#saveSettings").onclick=()=>{state.settings={kMin:+$("#setKcalMin").value||1900,kMax:+$("#setKcalMax").value||2000,pMin:+$("#setProtMin").value||130,pMax:+$("#setProtMax").value||150,bodyWeight:$("#setBodyWeight").value};saveState();renderDiet();renderHome();updateSessionSummary();alert("Objetivos guardados ✅")};
+ $("#saveSettings").onclick=()=>{state.settings={...state.settings,kMin:+$("#setKcalMin").value||1900,kMax:+$("#setKcalMax").value||2000,pMin:+$("#setProtMin").value||130,pMax:+$("#setProtMax").value||150,bodyWeight:$("#setBodyWeight").value};saveState();renderDiet();renderHome();updateSessionSummary();alert("Objetivos guardados ✅")};
  $("#addCustomMeal").onclick=()=>{const n=$("#customMealName").value.trim(),k=+$("#customMealKcal").value,p=+$("#customMealProt").value,d=$("#customMealDetail").value.trim();if(!n||!k)return alert("Añade nombre y calorías.");state.customMeals[n]={k,p,d,img:"assets/meal-custom.svg"};saveState();["#customMealName","#customMealKcal","#customMealProt","#customMealDetail"].forEach(s=>$(s).value="");renderDiet();alert("Plato añadido ✅")};
- $("#exportData").onclick=()=>{const data={version:3,exportedAt:new Date().toISOString(),settings:state.settings,customMeals:state.customMeals,diet:state.diet,workouts:state.workouts,weights:state.weights,media:state.media};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`mi-plan-backup-${todayISO()}.json`;a.click();URL.revokeObjectURL(a.href)};
- $("#importData").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());state.settings={...defaultSettings,...(x.settings||{})};state.customMeals=x.customMeals||{};state.diet=x.diet||{};state.workouts=x.workouts||[];state.weights=x.weights||[];saveState();location.reload()}catch(err){alert("No he podido leer ese JSON.")}};
+ $("#exportData").onclick=exportBackup;
+ $("#importData").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{importBackup(JSON.parse(await f.text()));location.reload()}catch(err){alert("No he podido importar la copia: "+err.message);e.target.value=""}};
  $("#resetAll").onclick=()=>{if(confirm("¿Seguro que quieres borrar dieta, entrenamientos, pesos y ajustes?")){Object.keys(localStorage).filter(k=>k.startsWith("miPlan")).forEach(k=>localStorage.removeItem(k));location.reload()}};
 }
 if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});

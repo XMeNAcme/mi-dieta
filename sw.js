@@ -1,5 +1,5 @@
-const CACHE="mi-plan-v36-fitness-2026-10-10";
-const ASSETS=["./","./index.html","./app.js","./manifest.webmanifest","./icon-192.svg","./icon-512.svg",
+const CACHE="mi-plan-v37-tools-2026-10-10";
+const ASSETS=["./","./index.html","./app.js?v=3.7","./enhancements.js?v=3.7","./manifest.webmanifest","./icon-192.svg","./icon-512.svg",
 "./assets/homegym.svg",
   "./assets/fitness-press_pecho.webp",
   "./assets/fitness-butterfly.webp",
@@ -31,7 +31,7 @@ self.addEventListener("fetch",event=>{
  if(event.request.method!=="GET")return;
  const url=new URL(event.request.url);
  if(url.origin!==location.origin)return;
- const core=event.request.mode==="navigate"||url.pathname.endsWith("/index.html")||url.pathname.endsWith("/app.js");
+ const core=event.request.mode==="navigate"||url.pathname.endsWith("/index.html")||url.pathname.endsWith("/app.js")||url.pathname.endsWith("/enhancements.js");
  event.respondWith(core
   ? fetch(event.request,{cache:"no-store"}).then(resp=>{if(resp.ok){const cp=resp.clone();event.waitUntil(caches.open(CACHE).then(c=>c.put(event.request,cp)))}return resp}).catch(()=>caches.match(event.request).then(r=>r||(event.request.mode==="navigate"?caches.match("./index.html"):Promise.reject(new Error("Offline")))))
   : caches.match(event.request).then(r=>r||fetch(event.request)));

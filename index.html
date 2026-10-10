@@ -104,13 +104,27 @@ details summary{font-weight:900;cursor:pointer}
  .stats{grid-template-columns:repeat(4,1fr)}.catalog-grid{grid-template-columns:1fr 1fr}
  .tabs{top:76px}.extras{grid-template-columns:1fr 1fr}
 }
+.zoom-image{position:relative;width:100%;border:0;border-bottom:1px solid var(--line);cursor:zoom-in;text-align:left}
+.zoom-image:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+.image-zoom-hint{position:absolute;bottom:8px;right:8px;border-radius:8px;background:#ffffffeb;padding:5px 8px;color:#334155;font-size:11px;font-weight:800}
+.last-load{margin:6px 0;color:#1d4ed8}
+.rest-panel{margin-bottom:14px;background:linear-gradient(125deg,#eff6ff,#fff)}
+.rest-time{font-size:44px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1;color:#1d4ed8}
+.rest-presets{display:flex;gap:6px;margin:10px 0}.rest-presets button[aria-pressed=true]{background:#2563eb;color:white}
+.rest-auto{display:flex;align-items:center;gap:8px;font-weight:600}.rest-auto input{width:18px;height:18px}
+.rest-mini{position:fixed;right:14px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:45;background:#0f172a;color:white;border-radius:999px;box-shadow:var(--shadow);font-variant-numeric:tabular-nums}
+.backup-reminder{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.backup-reminder p{margin:3px 0}.backup-reminder .backup-copy{flex:1;min-width:200px}
+.image-dialog{width:min(1000px,96vw);max-height:94vh;padding:16px;border:0;border-radius:18px;color:var(--ink);overflow:auto;box-shadow:0 20px 70px #0004}
+.image-dialog::backdrop{background:#0f172abf}.image-dialog h2{font-size:18px;margin:0}
+.image-dialog img{display:block;width:100%;max-height:70vh;object-fit:contain;margin-top:14px;background:#edf1f5;border-radius:12px}
+.exercise-load-chart svg{display:block;width:100%;height:auto;margin-top:14px}.table-scroll{overflow-x:auto}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="hero">
  <div class="hero-row">
-  <div><h1>💪 Mi Plan</h1><div class="sub">Dieta + fuerza + progreso · todo guardado en tu dispositivo · <b>V3.6</b></div></div>
+  <div><h1>💪 Mi Plan</h1><div class="sub">Dieta + fuerza + progreso · todo guardado en tu dispositivo · <b>V3.7</b></div></div>
   <div class="today-pill" id="todayLabel">Hoy</div>
  </div>
 </header>
@@ -124,6 +138,7 @@ details summary{font-weight:900;cursor:pointer}
 </nav>
 
 <main>
+<aside class="notice warnbox backup-reminder hidden" id="backupReminder" aria-label="Recordatorio de copia de seguridad"><div class="backup-copy"><b>💾 Guarda una copia de tus datos</b><p id="backupReminderText"></p></div><div class="row wrap"><button class="btn primary sm" id="backupNow">Exportar ahora</button><button class="btn ghost sm" id="backupLater">Recordar en 7 días</button></div></aside>
 <section class="page active" id="page-inicio">
  <div class="stats">
   <div class="stat"><div class="lab">Kcal ingeridas hoy</div><div class="val" id="homeFood">0</div><div class="mini">comida registrada</div></div>
@@ -210,6 +225,13 @@ details summary{font-weight:900;cursor:pointer}
   </div>
   <p class="small">Estimación energética: se usa una fórmula MET basada en duración, intensidad y peso corporal configurado. No sustituye una medición real.</p>
  </div>
+ <article class="card rest-panel" id="restPanel">
+  <div class="row between wrap"><div><h2>⏱ Descanso entre series</h2><div class="small" id="restStatus" role="status">Elige el descanso entre series.</div></div><div class="rest-time" id="restCountdown" aria-label="Tiempo restante">1:30</div></div>
+  <div class="rest-presets" aria-label="Duración del descanso"><button class="btn ghost sm" data-rest-seconds="60" aria-pressed="false">60 s</button><button class="btn ghost sm" data-rest-seconds="90" aria-pressed="true">90 s</button><button class="btn ghost sm" data-rest-seconds="120" aria-pressed="false">120 s</button></div>
+  <div class="row wrap"><button class="btn primary" id="restStart">Iniciar</button><button class="btn ghost" id="restPause" disabled>Pausar</button><button class="btn ghost" id="restStop" disabled>Cancelar</button></div>
+  <label class="rest-auto"><input type="checkbox" id="restAuto" checked>Iniciar descanso al completar una serie</label>
+  <p class="small">El contador conserva el tiempo al cambiar de pestaña o recargar. El aviso de fin se muestra dentro de la app.</p>
+ </article>
  <div id="routineRender"></div>
  <div class="card">
   <h2>Finalizar sesión</h2>
@@ -263,12 +285,21 @@ details summary{font-weight:900;cursor:pointer}
  </div>
 
  <div class="card" style="margin-top:10px">
+  <h2>💪 Progreso por ejercicio</h2>
+  <label for="exerciseProgressSelect">Elige un ejercicio</label><select id="exerciseProgressSelect"></select>
+  <p class="small" id="exerciseProgressEmpty">Guarda alguna serie de este ejercicio para ver tu evolución.</p>
+  <div class="hidden" id="exerciseProgressData"><div class="nums"><div class="metric"><b id="exerciseBest">—</b><span>Mejor carga</span></div><div class="metric"><b id="exerciseLast">—</b><span>Última sesión</span></div><div class="metric"><b id="exerciseCount">0</b><span>Sesiones</span></div></div>
+   <p class="small" id="exerciseProgressNote"></p><div class="exercise-load-chart" id="exerciseLoadChart"></div><div class="table-scroll" id="exerciseLoadHistory"></div>
+  </div>
+ </div>
+ <div class="card" style="margin-top:10px">
   <h2>🏋️ Historial de entrenamiento</h2>
   <div id="workoutHistory"></div>
  </div>
 
  <div class="card" style="margin-top:10px">
   <h2>💾 Copia de seguridad</h2>
+  <p class="small" id="backupStatusText"></p>
   <p class="small">La app no usa cuenta: tus datos están en el navegador. Puedes exportarlos a un archivo JSON y volver a importarlos cuando quieras.</p>
   <div class="row wrap">
    <button class="btn ghost" id="exportData">Exportar datos</button>
@@ -285,6 +316,11 @@ details summary{font-weight:900;cursor:pointer}
 </section>
 </main>
 </div>
+<dialog class="image-dialog" id="exerciseImageDialog" aria-labelledby="exerciseImageTitle">
+ <div class="row between"><h2 id="exerciseImageTitle">Imagen del ejercicio</h2><button class="btn ghost sm" id="closeExerciseImage" aria-label="Cerrar imagen ampliada">Cerrar ✕</button></div>
+ <img id="exerciseImageLarge" alt=""><p class="small" id="exerciseImageCaption"></p>
+</dialog>
+<button class="btn rest-mini hidden" id="restMini" aria-label="Ver temporizador de descanso">⏱ Descanso</button>
 
 <footer class="footerbar">
  <div class="inside">
@@ -292,6 +328,7 @@ details summary{font-weight:900;cursor:pointer}
   <button class="btn primary" data-goto="inicio">Resumen de hoy</button>
  </div>
 </footer>
-<script src="app.js"></script>
+<script src="enhancements.js?v=3.7"></script>
+<script src="app.js?v=3.7"></script>
 </body>
 </html>
