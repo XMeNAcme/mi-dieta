@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+<defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#f5d0fe"/><stop offset="100%" stop-color="#e9d5ff"/>
+      </linearGradient>
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.12"/>
+      </filter>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+      </marker>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#g)"/>
+    <rect x="0" y="0" width="100%" height="100%" fill="#ffffff" opacity="0.55"/>
+    <rect x="40" y="40" width="1120" height="620" rx="30" fill="#ffffff" opacity="0.65"/>
+    
+    <g>
+      <text x="80" y="110" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#7c3aed">PECHO</text>
+      <text x="80" y="155" font-family="Arial, Helvetica, sans-serif" font-size="50" font-weight="900" fill="#0f172a">Butterfly / aperturas</text>
+      <text x="80" y="192" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#475569">Posición inicial y final del movimiento</text>
+    </g>
+    <rect x="80" y="220" width="470" height="360" rx="28" fill="#ffffff" filter="url(#shadow)"/><rect x="650" y="220" width="470" height="360" rx="28" fill="#ffffff" filter="url(#shadow)"/><text x="280" y="255" font-family="Arial" font-size="18" font-weight="700" fill="#64748b">Inicio</text><text x="845" y="255" font-family="Arial" font-size="18" font-weight="700" fill="#64748b">Final</text><line x1="160" y1="520" x2="530" y2="520" stroke="#94a3b8" stroke-width="4" opacity="0.6"/>
+    <g stroke="#475569" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="160" y1="490" x2="160" y2="270"/>
+      <line x1="160" y1="270" x2="280" y2="270"/>
+      <line x1="280" y1="270" x2="280" y2="490" opacity="0.35"/>
+    </g>
+    <rect x="255" y="290" width="18" height="150" rx="7" fill="#334155" opacity="0.7"/>
+    <rect x="249" y="445" width="30" height="34" rx="8" fill="#334155"/>
+    
+    <g stroke="#475569" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="430" y1="490" x2="430" y2="270"/>
+      <line x1="430" y1="270" x2="550" y2="270"/>
+      <line x1="550" y1="270" x2="550" y2="490" opacity="0.35"/>
+    </g>
+    <rect x="445" y="290" width="18" height="150" rx="7" fill="#334155" opacity="0.7"/>
+    <rect x="439" y="445" width="30" height="34" rx="8" fill="#334155"/>
+    <rect x="290" y="435" width="70" height="18" rx="8" fill="#0f172a"/><rect x="298" y="391" width="18" height="48" rx="8" fill="#0f172a"/><circle cx="355" cy="300" r="18" fill="#f2b27e" stroke="#8a5a32" stroke-width="2"/><polygon points="331,328 379,328 393,390 317,390" fill="#2563eb" opacity="0.95"/><polyline points="329,310 299,350 285,430" fill="none" stroke="#f2b27e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><polyline points="381,310 411,350 425,430" fill="none" stroke="#f2b27e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><circle cx="285" cy="430" r="5" fill="#f2b27e"/><circle cx="425" cy="430" r="5" fill="#f2b27e"/><polyline points="335,388 331,420 315,515" fill="none" stroke="#d17f45" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><polyline points="375,388 379,420 395,515" fill="none" stroke="#d17f45" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="315" cy="515" rx="12" ry="6" fill="#111827"/><ellipse cx="395" cy="515" rx="12" ry="6" fill="#111827"/><rect x="265" y="391" width="20" height="8" rx="4" fill="#111827"/><rect x="425" y="391" width="20" height="8" rx="4" fill="#111827"/><line x1="295" y1="410" x2="335" y2="410" stroke="#2563eb" stroke-width="7" marker-end="url(#arrow)" opacity="0.85"/><line x1="415" y1="410" x2="375" y2="410" stroke="#2563eb" stroke-width="7" marker-end="url(#arrow)" opacity="0.85"/><line x1="730" y1="520" x2="1100" y2="520" stroke="#94a3b8" stroke-width="4" opacity="0.6"/>
+    <g stroke="#475569" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="730" y1="490" x2="730" y2="270"/>
+      <line x1="730" y1="270" x2="850" y2="270"/>
+      <line x1="850" y1="270" x2="850" y2="490" opacity="0.35"/>
+    </g>
+    <rect x="825" y="290" width="18" height="150" rx="7" fill="#334155" opacity="0.7"/>
+    <rect x="819" y="445" width="30" height="34" rx="8" fill="#334155"/>
+    
+    <g stroke="#475569" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="1000" y1="490" x2="1000" y2="270"/>
+      <line x1="1000" y1="270" x2="1120" y2="270"/>
+      <line x1="1120" y1="270" x2="1120" y2="490" opacity="0.35"/>
+    </g>
+    <rect x="1015" y="290" width="18" height="150" rx="7" fill="#334155" opacity="0.7"/>
+    <rect x="1009" y="445" width="30" height="34" rx="8" fill="#334155"/>
+    <rect x="860" y="435" width="70" height="18" rx="8" fill="#0f172a"/><rect x="868" y="391" width="18" height="48" rx="8" fill="#0f172a"/><circle cx="925" cy="300" r="18" fill="#f2b27e" stroke="#8a5a32" stroke-width="2"/><polygon points="901,328 949,328 963,390 887,390" fill="#2563eb" opacity="0.95"/><polyline points="899,310 869,350 910,430" fill="none" stroke="#f2b27e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><polyline points="951,310 981,350 940,430" fill="none" stroke="#f2b27e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><circle cx="910" cy="430" r="5" fill="#f2b27e"/><circle cx="940" cy="430" r="5" fill="#f2b27e"/><polyline points="905,388 901,420 885,515" fill="none" stroke="#d17f45" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><polyline points="945,388 949,420 965,515" fill="none" stroke="#d17f45" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="885" cy="515" rx="12" ry="6" fill="#111827"/><ellipse cx="965" cy="515" rx="12" ry="6" fill="#111827"/><rect x="900" y="416" width="20" height="8" rx="4" fill="#111827"/><rect x="930" y="416" width="20" height="8" rx="4" fill="#111827"/><line x1="980" y1="410" x2="945" y2="410" stroke="#2563eb" stroke-width="7" marker-end="url(#arrow)" opacity="0.85"/><line x1="870" y1="410" x2="905" y2="410" stroke="#2563eb" stroke-width="7" marker-end="url(#arrow)" opacity="0.85"/></svg>

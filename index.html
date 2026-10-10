@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mi Plan">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://contents.mediadecathlon.com https://upload.wikimedia.org; media-src 'self' blob: data: https://upload.wikimedia.org; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://contents.mediadecathlon.com; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.svg">
 <title>Mi Plan · Dieta + Entrenamiento</title>
@@ -73,9 +73,9 @@ textarea{min-height:80px;resize:vertical}
 .metric{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px}
 .metric b{display:block;font-size:18px}.metric span{font-size:10px;color:var(--muted)}
 .exercise-card{padding:0;overflow:hidden}
-.exercise-visual{height:145px;background:#eef2ff;display:grid;place-items:center;overflow:hidden}
-
-.exercise-visual img{width:100%;height:100%;object-fit:contain;display:block;background:#fff}\n.exercise-body{padding:12px}
+.exercise-visual{height:180px;background:#f8fafc;display:grid;place-items:center;overflow:hidden;padding:6px}
+.exercise-visual img{width:100%;height:100%;object-fit:contain;background:#fff}
+.exercise-body{padding:12px}
 .muscle{font-size:11px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:.05em}
 .exercise-name{font-size:17px;font-weight:900;margin:2px 0 4px}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
@@ -99,40 +99,10 @@ textarea{min-height:80px;resize:vertical}
 .hidden{display:none!important}
 hr{border:0;border-top:1px solid var(--line);margin:12px 0}
 details summary{font-weight:900;cursor:pointer}
-
-.media-gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.media-card{border:1px solid var(--line);background:#fff;border-radius:16px;overflow:hidden;text-align:left;padding:0}
-.media-card img{width:100%;height:110px;object-fit:cover;background:#eef2f7;display:block}
-.media-card .media-meta{padding:9px}
-.media-card .media-name{font-weight:900;font-size:13px;line-height:1.2}
-.media-card .media-sub{font-size:10px;color:var(--muted);margin-top:3px}
-.media-card.selected{outline:3px solid var(--accent);outline-offset:1px}
-.media-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.iconbtn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 9px;font-size:12px;font-weight:800}
-.last-load{margin-top:7px;padding:8px 9px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);font-size:11px}
-.last-load strong{font-size:13px}
-.modal{position:fixed;inset:0;z-index:100;background:rgba(15,23,42,.74);display:none;align-items:flex-end;justify-content:center;padding:0}
-.modal.open{display:flex}
-.modal-card{background:#fff;width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:16px;box-shadow:0 -10px 40px rgba(0,0,0,.25)}
-.modal-hero{width:100%;height:220px;object-fit:cover;border-radius:16px;background:#eef2ff}
-.modal-close{position:sticky;top:0;float:right;border:0;background:#0f172a;color:#fff;border-radius:999px;width:38px;height:38px;font-size:18px;z-index:2}
-.demo-stage{height:180px;border-radius:16px;background:linear-gradient(135deg,#e0e7ff,#dbeafe);display:grid;place-items:center;overflow:hidden;margin:10px 0}
-.demo-stage .demo-person{font-size:78px;animation:demoMove 1.7s ease-in-out infinite alternate}
-@keyframes demoMove{from{transform:translateX(-18px) rotate(-4deg)}to{transform:translateX(18px) rotate(4deg)}}
-.pr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.dark-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px}
-body.dark{--bg:#020617;--card:#0f172a;--ink:#e5e7eb;--muted:#94a3b8;--line:#243244;--dark:#020617}
-body.dark .card,body.dark .stat,body.dark .media-card,body.dark .iconbtn,body.dark select,body.dark input,body.dark textarea{background:#0f172a;color:#e5e7eb}
-body.dark .tabs,body.dark .footerbar{background:#0b1220ee}
-body.dark .tabbtn{background:#111827;color:#cbd5e1}
-body.dark .tabbtn.active{background:#312e81;color:#e0e7ff}
-body.dark .metric,body.dark .last-load,body.dark .extra{background:#111827}
-body.dark .modal-card{background:#0f172a}
-
 @media(min-width:720px){
  .grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:repeat(3,1fr)}
  .stats{grid-template-columns:repeat(4,1fr)}.catalog-grid{grid-template-columns:1fr 1fr}
- .tabs{top:76px}.extras{grid-template-columns:1fr 1fr}.media-gallery{grid-template-columns:repeat(4,1fr)}
+ .tabs{top:76px}.extras{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
@@ -140,7 +110,7 @@ body.dark .modal-card{background:#0f172a}
 <div class="app">
 <header class="hero">
  <div class="hero-row">
-  <div><h1>💪 Mi Plan</h1><div class="sub">Dieta + fuerza + progreso · todo guardado en tu dispositivo · <b>V3.4.5</b></div></div>
+  <div><h1>💪 Mi Plan</h1><div class="sub">Dieta + fuerza + progreso · todo guardado en tu dispositivo · <b>V3.5</b></div></div>
   <div class="today-pill" id="todayLabel">Hoy</div>
  </div>
 </header>
@@ -209,10 +179,6 @@ body.dark .modal-card{background:#0f172a}
   </div>
   <p class="small">Mantiene la base de tu app original, pero ahora puedes añadir platos propios y ver imágenes.</p>
  </div>
- <div class="card" style="margin-bottom:10px">
-  <div class="row between wrap"><div><h2>📸 Galería de platos</h2><div class="small">Toca un plato para seleccionarlo como comida de hoy. Puedes poner tu propia foto.</div></div></div>
-  <div class="media-gallery" id="mealGallery" style="margin-top:10px"></div>
- </div>
  <div id="dietDays"></div>
 
  <div class="card">
@@ -277,7 +243,6 @@ body.dark .modal-card{background:#0f172a}
     <div><label>Proteína máx. (g)</label><input id="setProtMax" type="number"></div>
     <div><label>Peso corporal para cálculo (kg)</label><input id="setBodyWeight" type="number" step="0.1"></div>
    </div>
-   <div class="dark-toggle" style="margin-top:12px"><div><b>🌙 Modo oscuro</b><div class="small">Más cómodo para entrenar por la noche.</div></div><input id="darkMode" type="checkbox" style="width:24px;height:24px"></div>
    <button class="btn primary" id="saveSettings" style="margin-top:10px">Guardar objetivos</button>
   </div>
   <div class="card">
@@ -285,16 +250,12 @@ body.dark .modal-card{background:#0f172a}
    <div class="nums">
     <div class="metric"><b id="progWorkouts">0</b><span>sesiones</span></div>
     <div class="metric"><b id="progSets">0</b><span>series hechas</span></div>
-    <div class="metric"><b id="progBurn">0</b><span>kcal estimadas</span></div><div class="metric"><b id="progVolume">0</b><span>kg volumen</span></div>
+    <div class="metric"><b id="progBurn">0</b><span>kcal estimadas</span></div>
    </div>
    <p class="small" id="progBest">Sin entrenamientos guardados todavía.</p>
   </div>
  </div>
 
- <div class="card" style="margin-top:10px">
-  <h2>🏆 Récords de carga</h2>
-  <div id="prTable"></div>
- </div>
  <div class="card" style="margin-top:10px">
   <h2>⚖️ Evolución de peso</h2>
   <canvas id="weightChart" class="chart" width="800" height="210"></canvas>
@@ -325,35 +286,12 @@ body.dark .modal-card{background:#0f172a}
 </main>
 </div>
 
-<div class="modal" id="exerciseModal" aria-hidden="true">
- <div class="modal-card">
-  <button class="modal-close" id="modalClose" aria-label="Cerrar">×</button>
-  <img class="modal-hero" id="modalImg" alt="">
-  <div class="muscle" id="modalMuscle" style="margin-top:12px"></div>
-  <h2 id="modalTitle" style="margin:4px 0 8px"></h2>
-  <div class="tags" id="modalTags"></div>
-  <div class="demo-stage"></div>
-  <p class="small" id="modalSetup"></p>
-  <p class="small" id="modalHow"></p>
-  <p class="small" id="modalTip"></p>
-  <label>Vídeo del ejercicio (YouTube u otra URL)</label>
-  <input id="exerciseVideoUrl" type="text" placeholder="Pega aquí el enlace del vídeo que quieras guardar">
-  <div class="media-actions">
-   <button class="btn primary" id="modalVideo">▶ Abrir vídeo</button>
-   <button class="btn ghost" id="saveExerciseVideo">💾 Guardar enlace</button>
-   <button class="btn ghost" id="searchExerciseVideo">🔎 Buscar vídeo</button>
-   <label class="btn ghost" style="margin:0">📷 Cambiar foto<input id="exercisePhotoInput" type="file" accept="image/*" capture="environment" style="display:none"></label>
-  </div>
-  <p class="small">La animación es orientativa. Puedes guardar un vídeo específico para cada ejercicio. Si todavía no hay uno guardado, usa “Buscar vídeo”.</p>
- </div>
-</div>
-
 <footer class="footerbar">
  <div class="inside">
   <button class="btn ghost" id="goTop">↑ Arriba</button>
   <button class="btn primary" data-goto="inicio">Resumen de hoy</button>
  </div>
 </footer>
-<script src="./app.js?v=20261006-v345"></script>
+<script src="app.js"></script>
 </body>
 </html>
