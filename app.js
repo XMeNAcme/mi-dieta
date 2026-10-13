@@ -113,11 +113,25 @@ function dietEntry(i){
  if(!state.diet[k]) state.diet[k]={meal:"— Selecciona —",dinner:"— Selecciona —",extras:{}};
  return state.diet[k];
 }
+// Old checked extras count as one serving; missing meal quantities also count as one.
+function servingUnits(value,fallback=1){
+ if(value===true)return 1;if(value===false)return 0;
+ if(value==null||value==='')return fallback;
+ const n=Number(value);return Number.isFinite(n)&&n>=0?n:fallback;
+}
+function nutritionNumber(value){return Math.round(value*100)/100}
+function nutritionText(value){return nutritionNumber(value).toLocaleString('es-ES')}
+function portionOptions(value){
+ const q=servingUnits(value), choices=[0,0.5,1,1.5,2,2.5,3,3.5,4];
+ if(!choices.includes(q))choices.push(q);choices.sort((a,b)=>a-b);
+ return choices.map(n=>`<option value="${n}" ${n===q?'selected':''}>${nutritionText(n)}</option>`).join('');
+}
+function portionControl(i,kind,value,label){return `<label class="portion-control">Raciones<select aria-label="Raciones de ${esc(label)} · ${days[i]}" data-portion="${kind}" data-i="${i}">${portionOptions(value)}</select></label>`}
 function calcDietEntry(i){
- const e=dietEntry(i), mm=meals(), a=mm[e.meal]||mm["— Selecciona —"], b=mm[e.dinner]||mm["— Selecciona —"];
- let k=a.k+b.k,p=a.p+b.p;
- Object.keys(extras).forEach((x,j)=>{if(e.extras[j]){k+=extras[x].k;p+=extras[x].p}});
- return {k,p,a,b};
+ const e=dietEntry(i), mm=meals(), a=mm[e.meal]||mm['— Selecciona —'], b=mm[e.dinner]||mm['— Selecciona —'];
+ let k=a.k*servingUnits(e.mealUnits)+b.k*servingUnits(e.dinnerUnits),p=a.p*servingUnits(e.mealUnits)+b.p*servingUnits(e.dinnerUnits);
+ Object.keys(extras).forEach((x,j)=>{const q=servingUnits(e.extras[j],0);k+=extras[x].k*q;p+=extras[x].p*q});
+ return {k:nutritionNumber(k),p:nutritionNumber(p),a,b};
 }
 function classify(k,p){
  const s=state.settings;
@@ -135,15 +149,16 @@ function renderDiet(){
   const e=dietEntry(i), c=calcDietEntry(i), cl=classify(c.k,c.p);
   root.insertAdjacentHTML("beforeend",`<article class="card meal-day" data-day="${i}">
    <div class="meal-head"><div><h2>${d}</h2><div class="small">${weekDate(i)}</div></div><span class="badge ${cl[1]}">${cl[0]}</span></div>
-   <div class="mealpick"><img class="thumb" id="mealImg${i}" src="${c.a.img}" alt=""><div><label>Comida</label><select data-kind="meal" data-i="${i}">${optsMeals(e.meal)}</select><div class="small" id="mealDet${i}">${esc(c.a.d)}</div></div></div>
-   <div class="mealpick"><img class="thumb" id="dinImg${i}" src="${c.b.img}" alt=""><div><label>Cena</label><select data-kind="dinner" data-i="${i}">${optsMeals(e.dinner)}</select><div class="small" id="dinDet${i}">${esc(c.b.d)}</div></div></div>
+   <div class="mealpick"><img class="thumb" id="mealImg${i}" src="${c.a.img}" alt=""><div><label>Comida</label><select data-kind="meal" data-i="${i}">${optsMeals(e.meal)}</select>${portionControl(i,"meal",e.mealUnits,"comida")}<div class="small" id="mealDet${i}">${esc(c.a.d)}</div></div></div>
+   <div class="mealpick"><img class="thumb" id="dinImg${i}" src="${c.b.img}" alt=""><div><label>Cena</label><select data-kind="dinner" data-i="${i}">${optsMeals(e.dinner)}</select>${portionControl(i,"dinner",e.dinnerUnits,"cena")}<div class="small" id="dinDet${i}">${esc(c.b.d)}</div></div></div>
    <label>Extras / comodines</label>
-   <div class="extras">${Object.keys(extras).map((x,j)=>`<label class="extra"><input type="checkbox" data-extra="${j}" data-i="${i}" ${e.extras[j]?"checked":""}><span>${esc(x)} · ${extras[x].k} kcal / ${extras[x].p} g</span></label>`).join("")}</div>
-   <div class="nums"><div class="metric"><b>${c.k}</b><span>kcal</span></div><div class="metric"><b>${c.p} g</b><span>proteína</span></div><div class="metric"><b>${Math.max(0,state.settings.kMax-c.k)}</b><span>kcal hasta máx.</span></div></div>
+   <p class="small portion-help">1 ración corresponde al plato o suplemento indicado. Las cantidades multiplican tanto las kcal como la proteína; 0 significa que no lo has tomado.</p>
+   <div class="extras">${Object.keys(extras).map((x,j)=>`<div class="extra portion-extra"><span>${esc(x)}<small>Por ración: ${extras[x].k} kcal / ${extras[x].p} g de proteína</small></span>${portionControl(i,'extra:'+j,servingUnits(e.extras[j],0),x)}</div>`).join('')}</div>
+   <div class="nums"><div class="metric"><b>${nutritionText(c.k)}</b><span>kcal</span></div><div class="metric"><b>${nutritionText(c.p)} g</b><span>proteína</span></div><div class="metric"><b>${nutritionText(Math.max(0,state.settings.kMax-c.k))}</b><span>kcal hasta máx.</span></div></div>
   </article>`);
  });
  $$("[data-kind]").forEach(el=>el.onchange=()=>{const i=+el.dataset.i;dietEntry(i)[el.dataset.kind]=el.value;saveState();renderDiet();renderHome()});
- $$("[data-extra]").forEach(el=>el.onchange=()=>{const i=+el.dataset.i;dietEntry(i).extras[el.dataset.extra]=el.checked;saveState();renderDiet();renderHome()});
+ $$('[data-portion]').forEach(el=>el.onchange=()=>{const e=dietEntry(+el.dataset.i),kind=el.dataset.portion,q=servingUnits(el.value,0);if(kind.startsWith('extra:'))e.extras[kind.slice(6)]=q;else e[kind+'Units']=q;saveState();renderDiet();renderHome()});
 }
 function todayDiet(){
  const day=(new Date().getDay()+6)%7; return calcDietEntry(day);

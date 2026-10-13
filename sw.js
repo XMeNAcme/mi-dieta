@@ -1,5 +1,5 @@
-const CACHE="mi-plan-v37-tools-2026-10-10";
-const ASSETS=["./","./index.html","./app.js?v=3.7","./enhancements.js?v=3.7","./manifest.webmanifest","./icon-192.svg","./icon-512.svg",
+const CACHE="mi-plan-v38-portions-2026-10-13";
+const ASSETS=["./","./index.html","./app.js?v=3.8","./enhancements.js?v=3.8","./manifest.webmanifest","./icon-192.svg","./icon-512.svg",
 "./assets/homegym.svg",
   "./assets/fitness-press_pecho.webp",
   "./assets/fitness-butterfly.webp",
